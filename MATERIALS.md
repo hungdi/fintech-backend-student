@@ -8,13 +8,13 @@
 | 1강 4-2. 전표를 상세 내역과 연결하기 | `service/LedgerPostingCommand.java`, `domain/LedgerPostingRules.java`, `domain/StoredMoney.java` | DTO와 메서드 계약 | 금액 범위와 거래 유형별 분개 검증 | 앞 절의 관계 설계 |
 | 1강 6-1. 원장 저장 순서와 트랜잭션 | `service/LedgerPostingService.java` | 주입과 반환 타입, 전표번호 생성 | 검증, 저장 순서, 거래 출처와 트랜잭션 | 원장 엔티티와 금액 검증 |
 | 2강 1-3. Controller에서 Service로 전달할 DTO 구성하기 | `lecture-02/01-request` | 입력 필드와 검증기 연결 선언 | HTTP 금액 제약과 정확한 표현 범위 | 1강 `StoredMoney` |
-| 2강 2-1~6-5 | `lecture-02/02-processing` | 추적 ID와 Clock 연결, Command와 Result, 실패 주입 계약, 데이터 및 동시 호출 도우미 | 검증, 잔액, Lock, 요청 해시, 멱등성, 원장 연결 | 1강 원장 저장 |
+| 2강 2-1~6-5 | `lecture-02/02-processing` | 추적 ID와 Clock 연결, Command와 Result, 실패 주입 계약, 샘플 데이터 생성 코드와 동시 요청 실행 코드 | 검증, 잔액, Lock, 요청 해시, 멱등성, 원장 연결 | 1강 원장 저장 |
 | 2강 6-6. Controller에서 송금 Service 호출하기 | `lecture-02/03-http` | HTTP 경로와 응답 DTO | Service 연결과 오류 응답 | 처리 Service와 결과 타입 |
 | 3강 2-4. 대사 결과를 엔티티에 담기 / 3-1. 샘플 데이터 저장 및 대사 실행 환경 준비하기 | `lecture-03/01-internal` | 엔티티와 결과 계약, 고정 샘플 | 차이 계산, 비교 규칙과 상태 판정 | 1~2강 엔티티와 완료 시각 |
-| 3강 4-6. 제휴은행 거래자료의 금액 차이와 누락 테스트하기 | `lecture-03/02-external` | JSON 13개와 읽기 도우미, 비교용 오더 샘플 | 범위 조회, 누락과 금액 비교, 입력 오류 거절 | 기관 코드와 Repository 추가 |
+| 3강 4-6. 제휴은행 거래자료의 금액 차이와 누락 테스트하기 | `lecture-03/02-external` | JSON 13개와 파일 읽기 코드, 비교용 오더 샘플 | 범위 조회, 누락과 금액 비교, 입력 오류 거절 | 기관 코드와 Repository 추가 |
 | 3강 5-2. 실행 시각과 Service 호출 연결하기 | `lecture-03/03-scheduling` | 주입과 호출 테스트 예제, 비활성 설정 | cron과 UTC 날짜, Service 호출 | 내부 대사 Service |
 | 4강 2-5. 로그인 입력과 JWT 인증 설정 연결하기 | `lecture-04/01-security` | 설정 바인딩, DTO, 주입 및 테스트 환경 | 로그인, JWT 검증, 역할과 소유권, 마스킹, 감사 기록 | 3강까지 구현, 보안 의존성 추가 |
-| 4강 8-4. 초기 입금부터 송금과 대사까지 확인하기 | `lecture-04/02-integration` | 초기 입금 도우미와 테스트 틀 | 입금, 로그인, 송금, 대사의 통합 검증 | 앞 강의의 잔액 변경과 원장 Service |
+| 4강 8-4. 초기 입금부터 송금과 대사까지 확인하기 | `lecture-04/02-integration` | 초기 입금 함수와 테스트 틀 | 입금, 로그인, 송금, 대사의 통합 검증 | 앞 강의의 잔액 변경과 원장 Service |
 
 표의 `domain`과 `service`는 `src/main/java/com/sparta/fintech/ledger/` 아래 경로입니다. `lecture-02` 등의 경로는 `materials/` 아래를 뜻합니다. 각 새 파일의 전체 상대 경로는 문서 끝의 파일 목록에서 확인합니다.
 
@@ -48,7 +48,7 @@
 
 ### 4-2. 전표를 상세 내역과 연결하기 / 6-1. 원장 저장 순서와 트랜잭션
 
-`LedgerPostingCommand`는 11인자와 9인자 생성자를 모두 제공합니다. 9인자 형태에서 전표 TID는 `tid + "-JOURNAL"`, 회계원장 TID는 `tid + "-LEDGER"`입니다. 같은 TID를 재사용하면 같은 추적 ID가 만들어지므로 초기 입금 도우미를 여러 번 호출하는 키로 사용하지 않습니다.
+`LedgerPostingCommand`는 11인자와 9인자 생성자를 모두 제공합니다. 9인자 형태에서 전표 TID는 `tid + "-JOURNAL"`, 회계원장 TID는 `tid + "-LEDGER"`입니다. 같은 TID를 재사용하면 같은 추적 ID가 만들어집니다. 초기 입금 함수 `FinancialTestData.openingDeposit()`은 고정 TID를 사용하므로 테스트 DB를 초기화한 뒤 한 번 호출합니다.
 
 `AccountPosting`은 5인자이며 마지막 `balanceAfter`에는 거래 직후 **원장잔액**을 넣습니다. `JournalPosting`은 계정코드와 고객 계좌 ID를 별도 필드로 받습니다. 현금 계정 `100101`의 고객 계좌는 null이고 고객예수금은 `210101`입니다.
 
@@ -175,7 +175,7 @@ default List<DmTransferOrder> findSettlementTargets(java.time.Instant startAt, j
 
 ### 4-6-1. 제공된 JSON 파일의 입력과 기대 결과 구분하기
 
-파일은 `materials/lecture-03/02-external/src/test/resources/settlement/`에 있습니다. `SettlementJson.read()`가 반환한 `input`의 세 값만 `SettlementService.calculate()`에 전달합니다. `expected`와 `expectedError`는 테스트에서만 사용하세요. JSON 도우미는 중복 TID나 잘못된 금액을 걸러내지 않으므로 Service 검증을 확인할 수 있습니다.
+파일은 `materials/lecture-03/02-external/src/test/resources/settlement/`에 있습니다. `SettlementJson.read()`가 반환한 `input`의 세 값만 `SettlementService.calculate()`에 전달합니다. `expected`와 `expectedError`는 테스트에서만 사용하세요. `SettlementJson.read()`는 중복 TID나 잘못된 금액도 그대로 DTO로 변환하므로 Service의 입력 검증을 확인할 수 있습니다.
 
 | 파일 | 입력의 의미 | 기대 결과 |
 | --- | --- | --- |
@@ -187,7 +187,7 @@ default List<DmTransferOrder> findSettlementTargets(java.time.Instant startAt, j
 | `zero-external-only.json` | 외부에만 0원 기록 존재 | 없는 행과 0원을 구분한 불일치 |
 | `invalid/*.json` 7개 | 중복 TID, 누락된 TID와 금액, 음수, 범위 및 자릿수 초과 | 예외, 결과 행 추가 없음 |
 
-모든 자료는 기본 과제입니다. 운영 규모의 분할 조회와 장애 재시작은 추가 탐구 주제입니다. `ReconciliationService`의 합계 도우미는 제공하지만 어떤 자료를 비교할지, 누락을 어떻게 판정할지는 직접 작성합니다.
+모든 자료는 기본 과제입니다. 운영 규모의 분할 조회와 장애 재시작은 추가 탐구 주제입니다. `ReconciliationService`의 합계 계산 메서드는 제공하지만 어떤 자료를 비교할지, 누락을 어떻게 판정할지는 직접 작성합니다.
 
 ### 5-1. 매일 UTC 02:00에 대사하도록 예약하기
 
