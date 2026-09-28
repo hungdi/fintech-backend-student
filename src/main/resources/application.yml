@@ -1,0 +1,30 @@
+spring:
+  jackson:
+    time-zone: UTC
+    serialization:
+      write-dates-as-timestamps: false
+  application:
+    name: fintech-backend-student
+  datasource:
+    url: ${DB_URL:jdbc:mysql://127.0.0.1:3306/fintech_student?connectionTimeZone=UTC&forceConnectionTimeZoneToSession=true&characterEncoding=UTF-8&allowPublicKeyRetrieval=true&useSSL=false}
+    username: ${DB_USERNAME:fintech_student}
+    password: ${DB_PASSWORD}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        format_sql: true
+        jdbc:
+          time_zone: UTC
+    open-in-view: false
+  sql:
+    init:
+      mode: never
+
+logging:
+  pattern:
+    dateformat: "yyyy-MM-dd'T'HH:mm:ss.SSSXXX,UTC"
+  level:
+    org.hibernate.SQL: debug

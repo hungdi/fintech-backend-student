@@ -1,0 +1,3 @@
+account_code,account_name,normal_balance_type
+100101,현금,DEBIT
+210101,고객예수금,CREDIT

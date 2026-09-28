@@ -1,0 +1,43 @@
+{
+  "baseDate": "2026-09-15",
+  "externalInstitutionCode": "OTHER-BANK",
+  "externalItems": [
+    {
+      "targetTid": "T-TRANSFER",
+      "targetGid": "G-TRANSFER",
+      "amount": "300.00"
+    },
+    {
+      "targetTid": "T-EXTERNAL-ONLY",
+      "targetGid": "G-EXTERNAL-ONLY",
+      "amount": "100.00"
+    }
+  ],
+  "expected": {
+    "internalTotalAmount": "300.00",
+    "externalTotalAmount": "400.00",
+    "settlementAmount": "100.00",
+    "detailCount": 2,
+    "mismatchCount": 1,
+    "details": [
+      {
+        "targetTid": "T-EXTERNAL-ONLY",
+        "targetGid": "G-EXTERNAL-ONLY",
+        "internalAmount": "0.00",
+        "externalAmount": "100.00",
+        "differenceAmount": "100.00",
+        "matched": false,
+        "reason": "외부기관에는 있으나 우리 시스템에는 없는 거래입니다."
+      },
+      {
+        "targetTid": "T-TRANSFER",
+        "targetGid": "G-TRANSFER",
+        "internalAmount": "300.00",
+        "externalAmount": "300.00",
+        "differenceAmount": "0.00",
+        "matched": true,
+        "reason": "정산 대상 금액이 일치합니다."
+      }
+    ]
+  }
+}

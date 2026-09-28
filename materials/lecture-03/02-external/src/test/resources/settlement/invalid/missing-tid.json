@@ -1,0 +1,11 @@
+{
+  "baseDate": "2026-09-15",
+  "externalInstitutionCode": "OTHER-BANK",
+  "externalItems": [
+    {
+      "targetGid": "G-TRANSFER",
+      "amount": "300.00"
+    }
+  ],
+  "expectedError": "외부 거래 TID"
+}

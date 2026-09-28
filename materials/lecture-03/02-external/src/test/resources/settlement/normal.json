@@ -1,0 +1,29 @@
+{
+  "baseDate": "2026-09-15",
+  "externalInstitutionCode": "OTHER-BANK",
+  "externalItems": [
+    {
+      "targetTid": "T-TRANSFER",
+      "targetGid": "G-TRANSFER",
+      "amount": "300.00"
+    }
+  ],
+  "expected": {
+    "internalTotalAmount": "300.00",
+    "externalTotalAmount": "300.00",
+    "settlementAmount": "0.00",
+    "detailCount": 1,
+    "mismatchCount": 0,
+    "details": [
+      {
+        "targetTid": "T-TRANSFER",
+        "targetGid": "G-TRANSFER",
+        "internalAmount": "300.00",
+        "externalAmount": "300.00",
+        "differenceAmount": "0.00",
+        "matched": true,
+        "reason": "정산 대상 금액이 일치합니다."
+      }
+    ]
+  }
+}

@@ -1,0 +1,4 @@
+// build.gradle의 dependencies 블록 안에 이 의존성을 추가하세요.
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+}

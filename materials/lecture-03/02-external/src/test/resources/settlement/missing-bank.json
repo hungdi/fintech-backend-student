@@ -1,0 +1,23 @@
+{
+  "baseDate": "2026-09-15",
+  "externalInstitutionCode": "OTHER-BANK",
+  "externalItems": [],
+  "expected": {
+    "internalTotalAmount": "300.00",
+    "externalTotalAmount": "0.00",
+    "settlementAmount": "-300.00",
+    "detailCount": 1,
+    "mismatchCount": 1,
+    "details": [
+      {
+        "targetTid": "T-TRANSFER",
+        "targetGid": "G-TRANSFER",
+        "internalAmount": "300.00",
+        "externalAmount": "0.00",
+        "differenceAmount": "-300.00",
+        "matched": false,
+        "reason": "우리 시스템에는 있으나 외부기관에는 없는 거래입니다."
+      }
+    ]
+  }
+}

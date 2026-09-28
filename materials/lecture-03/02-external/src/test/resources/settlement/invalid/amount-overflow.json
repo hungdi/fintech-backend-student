@@ -1,0 +1,12 @@
+{
+  "baseDate": "2026-09-15",
+  "externalInstitutionCode": "OTHER-BANK",
+  "externalItems": [
+    {
+      "targetTid": "T-TRANSFER",
+      "targetGid": "G-TRANSFER",
+      "amount": "100000000000000000"
+    }
+  ],
+  "expectedError": "DECIMAL(19,2)"
+}

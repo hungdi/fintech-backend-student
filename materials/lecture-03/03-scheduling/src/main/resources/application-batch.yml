@@ -1,0 +1,5 @@
+# TODO [특강 3 / 5-1] UTC 02:00 예약식을 직접 정하고 환경변수 기본값으로 넣으세요.
+# 활성화 전까지 예약 실행을 멈춥니다.
+reconciliation:
+  schedule:
+    cron: ${RECONCILIATION_CRON:-}
