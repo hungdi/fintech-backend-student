@@ -15,7 +15,7 @@ public record SecurityProperties(
     }
     private static void validate(String issuer, long accessTokenTtlMinutes, String jwtSecret,
         String cryptoPassword, String cryptoSalt) {
-        // TODO [특강 4 / 2-5-1] 설정 기본값과 JWT 키 길이, 암호화 비밀값의 필수 조건을 검증하세요.
-        throw new UnsupportedOperationException("TODO [특강 4 / 2-5-1] 설정 기본값과 JWT 키 길이, 암호화 비밀값의 필수 조건을 검증하세요.");
+        // TODO [특강 4 / 2-5-1] 설정 기본값과 JWT 서명 키 jwtSecret의 길이, 암호화 키 생성에 쓰는 cryptoPassword와 cryptoSalt의 필수 조건을 검증하세요.
+        throw new UnsupportedOperationException("TODO [특강 4 / 2-5-1] 설정 기본값과 JWT 서명 키 jwtSecret의 길이, 암호화 키 생성에 쓰는 cryptoPassword와 cryptoSalt의 필수 조건을 검증하세요.");
     }
 }

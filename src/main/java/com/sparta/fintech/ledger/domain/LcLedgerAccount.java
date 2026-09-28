@@ -10,7 +10,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 
-/** TODO [특강 1 / 4-1] 계정코드의 유일성과 정상 잔액 구분을 매핑하세요. 필드와 생성자, getter는 호출 계약으로 제공합니다. */
+/** TODO [특강 1 / 4-1] 계정코드의 유일성과 계정과목의 잔액이 보통 남는 쪽인 차변 또는 대변을 매핑하세요. 필드와 생성자, getter는 호출 계약으로 제공합니다. */
 public class LcLedgerAccount extends BaseTimeEntity {
 
     private Long ledgerAccountCodeId;

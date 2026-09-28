@@ -48,9 +48,11 @@
 
 ### 4-2. 전표를 상세 내역과 연결하기 / 6-1. 원장 저장 순서와 트랜잭션
 
-`LedgerPostingCommand`는 11인자와 9인자 생성자를 모두 제공합니다. 9인자 형태에서 전표 TID는 `tid + "-JOURNAL"`, 회계원장 TID는 `tid + "-LEDGER"`입니다. 같은 TID를 재사용하면 같은 추적 ID가 만들어집니다. 초기 입금 함수 `FinancialTestData.openingDeposit()`은 고정 TID를 사용하므로 테스트 DB를 초기화한 뒤 한 번 호출합니다.
+`LedgerPostingCommand`는 전체 필드를 받는 11인자 생성자와 추적 ID 일부를 생략하는 9인자 생성자를 제공합니다. 9인자 형태에서 전표 TID는 `tid + "-JOURNAL"`, 회계원장 TID는 `tid + "-LEDGER"`입니다. 같은 TID를 재사용하면 같은 추적 ID가 만들어집니다. 초기 입금 함수 `FinancialTestData.openingDeposit()`은 고정 TID를 사용하므로 테스트 DB를 초기화한 뒤 한 번 호출합니다.
 
 `AccountPosting`은 5인자이며 마지막 `balanceAfter`에는 거래 직후 **원장잔액**을 넣습니다. `JournalPosting`은 계정코드와 고객 계좌 ID를 별도 필드로 받습니다. 현금 계정 `100101`의 고객 계좌는 null이고 고객예수금은 `210101`입니다.
+
+`LcLedgerAccount.normalBalanceType`은 계정과목의 잔액이 보통 남는 쪽인 차변 또는 대변을 나타냅니다.
 
 `StoredMoney`에서 금액 범위 검사를 먼저 작성합니다. 거래 금액은 양수, 잔액은 0 이상이며 모두 `DECIMAL(19,2)`에 반올림 없이 표현 가능해야 합니다. `0.005`와 `100000000000000000`은 거절하고 `300.000`과 `0.0100`은 값이 달라지지 않으므로 허용합니다. 잔액 생성자도 이 검증을 사용합니다. 2강에서는 HTTP와 Service 입구에 같은 조건을 연결합니다.
 
@@ -81,13 +83,13 @@ default Optional<DmAccountBalance> findByAccountIdForUpdate(Long accountId) {
 
 `FinancialIdGenerator`, `GeneratedTransferTraceIds`와 UTC Clock은 준비 코드입니다. 반환 필드는 `tid`, `gid`, `journalTid`, `accountingLedgerTid`입니다. 학생은 이 값을 송금 오더와 원장 DTO에 연결합니다.
 
-`TransferResult`는 내부 처리 결과이고 고객에게 보낼 `TransferHttpResponse`는 `transferOrderId`, `tid`, `status`, `withdrawalAccountBalance`의 네 필드입니다. 다른 고객의 입금 잔액은 고객 응답에 추가하지 않습니다. 대사 테스트에서는 Repository로 내부 추적 ID를 조회하세요.
+`TransferProcessor.toResult()`는 완료된 오더와 잔액을 내부 결과 DTO인 `TransferResult`로 변환합니다. `TransferHttpResponse`는 클라이언트에 공개할 `transferOrderId`, `tid`, `status`, `withdrawalAccountBalance` 네 필드만 담는 Response DTO입니다. Controller는 이 객체를 `ResponseEntity`의 본문에 넣어 반환합니다. 다른 고객의 입금 잔액은 고객 응답에 추가하지 않습니다. 대사 테스트에서는 Repository로 내부 추적 ID를 조회하세요.
 
 ### 7-1. 테스트 데이터와 실행 환경 준비하기
 
 `TransferTestSupport.createTransferAccounts()`는 출금 잔액 1,000,000원, 입금 잔액 100,000원, 1회 한도 1,000,000원을 준비합니다. 300,000원 송금 후 두 잔액은 700,000원과 400,000원입니다. 이 준비 함수에는 초기 원장이 없으므로 3강의 정상 대사 데이터로 사용하지 않습니다.
 
-`ConcurrentRequests`는 동시 호출만 도와줍니다. 금액과 행 수의 검증은 직접 작성하세요. `TransferFailureHook`을 테스트 Bean이나 Spy로 교체해 네 실패 지점을 확인합니다. `AFTER_LEDGER_POSTING`도 포함합니다. 테스트 클래스 전체에 트랜잭션을 걸지 말고 Service 커밋이 끝난 뒤 다시 조회하세요.
+`ConcurrentRequests.run()`은 전달받은 요청을 여러 스레드에서 동시에 실행합니다. 금액과 행 수의 검증은 직접 작성하세요. `TransferFailureHook`을 테스트 Bean이나 Spy로 교체해 네 실패 지점을 확인합니다. `AFTER_LEDGER_POSTING`도 포함합니다. 테스트 클래스 전체에 트랜잭션을 걸지 말고 Service 커밋이 끝난 뒤 다시 조회하세요.
 
 `TestDatabaseReset`은 `jdbc:h2:mem:fintech_student`만 초기화합니다. 정리할 때만 FK 검사를 잠시 해제하고 finally에서 복구합니다. 제약 검증은 정상 FK 검사 상태에서 실제 저장을 호출해 확인합니다. DB를 초기화하지 않고 고정 식별값의 샘플을 다시 적재하면 중복 제약에 걸릴 수 있습니다.
 
@@ -205,15 +207,17 @@ default List<DmTransferOrder> findSettlementTargets(java.time.Instant startAt, j
 
 `security.config.SecurityProperties`의 타입과 `@ConfigurationProperties(prefix = "app.security")`, `SecurityConfig`의 `@EnableConfigurationProperties` 등록은 준비되어 있습니다. `issuer`, `long accessTokenTtlMinutes`, `jwtSecret`, `cryptoPassword`, `cryptoSalt`는 YAML의 kebab-case 이름과 연결됩니다.
 
-Properties의 compact 생성자에서 기본 issuer `sparta-fintech`와 양수가 아닌 TTL의 기본값 30분을 적용하고, JWT 키 32자 이상과 암호화 비밀값의 필수 조건을 작성하세요. 기본값은 매개변수에 먼저 적용한 뒤 검증합니다. 제공된 `validate()`의 본문만으로 생성자 매개변수를 바꿀 수는 없으므로 기본값 처리는 compact 생성자에 작성합니다. 초기에는 값 검증 TODO가 있어 Properties 생성과 Spring 기동이 실패합니다. smoke 검사는 선언의 연결만 확인합니다.
+Properties의 compact 생성자에서 기본 issuer `sparta-fintech`와 양수가 아닌 TTL의 기본값 30분을 적용하고, JWT 서명 키 `jwtSecret`이 32자 이상인지, 암호화 키 생성에 쓰는 `cryptoPassword`와 `cryptoSalt`가 비어 있지 않은지 검증하세요. 기본값은 매개변수에 먼저 적용한 뒤 검증합니다. 제공된 `validate()`의 본문만으로 생성자 매개변수를 바꿀 수는 없으므로 기본값 처리는 compact 생성자에 작성합니다. 초기에는 값 검증 TODO가 있어 Properties 생성과 Spring 기동이 실패합니다. smoke 검사는 선언의 연결만 확인합니다.
+
+`AccountJwtAuthenticationConverter`는 JWT를 Spring Security 인증 객체로 변환하는 Converter 클래스입니다. 검증된 JWT의 계정 식별값으로 현재 DB의 계정 상태와 역할을 확인하고 인증 객체에 연결하세요.
 
 기본 실습은 LOCAL 사용자 로그인입니다. 제공자 URL은 예시이므로 실제 외부 로그인은 유효한 제공자 등록과 연결된 계정을 준비한 뒤 2-6에서 진행합니다. 테스트의 `training-client` 등은 공개된 가짜 설정입니다.
 
 ### 3-4. 보안 서비스에서 한도 검증 및 Controller 연결
 
-기존 `TransferController`에서 `TransferService` 필드, import 및 생성자 인자를 `SecureTransferService`로 연결합니다. `transfer()`의 기존 Request 변환은 유지하고 호출 대상과 고객 역할 검사를 추가합니다. `SecurityConfig`의 메서드 보안 활성화와 각 보호 Controller의 역할 제약도 작성하세요. 고객 API는 `ROLE_CUSTOMER`, 운영 대사 조회는 `ROLE_OPERATIONS`를 사용합니다.
+기존 `TransferController`에서 `TransferService` 필드, import 및 생성자 인자를 소유권과 한도를 검사하는 `SecureTransferService`로 연결합니다. `transfer()`의 기존 Request 변환은 유지하고 호출 대상과 고객 역할 검사를 추가합니다. `SecurityConfig`의 메서드 보안 활성화와 인증이 필요한 Controller의 역할 제약도 작성하세요. 고객 API는 `ROLE_CUSTOMER`, 운영 대사 조회는 `ROLE_OPERATIONS`를 사용합니다.
 
-`TransferService`와 `TransferProcessor`의 `TransferPolicy` 인자 메서드는 2강에 이미 있습니다. `SecureTransferService`에서 소유권과 일일 한도 정책을 연결하세요. 일일 한도는 새 송금의 잔액 Lock을 얻은 트랜잭션 안에서 검사하며 완료된 요청의 재시도는 한도를 다시 소진하지 않습니다. 바깥 트랜잭션을 추가해 커밋 전에 요청 키 Lock이 풀리게 만들지 않습니다.
+`TransferService`와 `TransferProcessor`의 `TransferPolicy` 인자 메서드는 2강에 이미 있습니다. `SecureTransferService`에서 소유권과 일일 한도 정책을 연결하세요. 일일 한도 검사는 새 송금의 잔액 Lock을 얻은 트랜잭션 안에서 수행합니다. UTC 기준 해당 날짜의 완료 송금액과 이번 요청 금액을 합산해 한도와 비교하세요. 완료된 요청의 재시도에서는 이미 완료된 송금액을 신규 사용액으로 다시 더하지 않습니다. 바깥 트랜잭션을 추가해 커밋 전에 요청 키 Lock이 풀리게 만들지 않습니다.
 
 기존 Repository에 다음 계약을 추가합니다. 첫 메서드는 default 본문을 없애고 완료 상태와 출금 계좌 및 UTC 시간 범위의 합계 JPQL로 구현합니다. 나머지는 파생 조회입니다.
 
@@ -233,15 +237,27 @@ org.springframework.data.domain.Page<SiReconciliationResult> findByReconciliatio
 
 `AmAuthUserRepository` 등의 미완성 default 조회도 같은 방식으로 본문을 없애고 조회와 필요한 참조 로딩을 작성합니다. 엔티티의 관계가 지연 로딩일 때 서비스 경계 밖에서 접근 가능한지도 확인하세요.
 
-### 5-3-2. 송금과 함께 완료 증거 저장하기 / 6-1. HTTP 상태 코드와 보안 실패 구분
+### 4-1. 암호문 형식 확인과 변조 검증 구분하기
 
-기존 `TransferProcessor`에 `private final TransferCompletionRecorder completionRecorder` 필드를 추가하고, 기존 생성자의 `Clock clock` 다음에 같은 타입의 인자를 추가해 필드에 할당합니다. `process(command, policy)`에서 오더를 완료한 뒤, 반환하기 전에 이 기록기를 호출하세요. 재시도 경로에서 중복 기록하지 않습니다. 기록기의 필수 트랜잭션 조건을 직접 적용하고 저장 실패가 잔액과 원장까지 롤백하는지 확인합니다.
+`SensitiveDataCryptoService.encrypt()`는 암호화 실습용 시크릿을 암호화하고 `gcm:v1:` 접두어를 붙입니다. `decrypt()`에서는 지원하는 접두어인지 확인한 뒤 복호화 과정에서 변조 여부를 검증하세요. 접두어 확인 실패는 “지원하지 않는 암호문 형식입니다.”, 복호화 중 검증 실패는 “암호문 검증에 실패했습니다.”로 구분합니다.
+
+### 5-3-1. 감사 기록에 저장할 문자열 처리하기
+
+`AuditLogService.safeText()`는 줄바꿈과 탭을 공백으로 바꾸고, 이메일과 숫자 패턴을 마스킹한 뒤 길이를 제한하는 메서드로 구현합니다. `save()`에서는 해당 문자열 필드에 `safeText()`로 처리한 값을 사용하세요. 모든 개인정보를 자동으로 찾아내는 기능으로 가정하지 않습니다.
+
+### 5-3-2. 송금 완료 기록을 같은 트랜잭션에서 저장하기 / 6-1. HTTP 상태 코드와 보안 실패 구분
+
+송금 완료 기록 엔티티 `AhTransferCompletion`에는 오더 ID, 금액과 완료 시각 등을 저장합니다. 이 기록은 잔액 변경과 같은 DB 트랜잭션에서 저장하세요.
+
+기존 `TransferProcessor`에 `private final TransferCompletionRecorder completionRecorder` 필드를 추가하고, 기존 생성자의 `Clock clock` 다음에 같은 타입의 인자를 추가해 필드에 할당합니다. `process(command, policy)`에서 오더를 완료한 뒤, 반환하기 전에 `completionRecorder.record(order)`를 호출하세요. 재시도 경로에서 중복 기록하지 않습니다. `TransferCompletionRecorder`의 필수 트랜잭션 조건을 직접 적용하고 저장 실패가 잔액과 원장까지 롤백하는지 확인합니다.
 
 `TransferExceptionHandler`의 기존 입력 오류 및 409 규칙을 새 `common.web.ApiExceptionHandler`에 옮겨 보안과 감사 처리를 확장합니다. 같은 예외를 두 전역 Advice가 처리하지 않도록 기존 `TransferExceptionHandler`의 `@RestControllerAdvice`를 제거한 뒤 필요 없는 옛 클래스를 정리하세요. `transfer.web.ErrorResponse`를 사용하던 곳은 `common.web.ErrorResponse`로 변경하고 기존 HTTP 계약은 유지합니다. 일반 `IllegalStateException`은 500이며 요청 키 충돌만 409로 처리합니다.
 
 ### 7-1-2. 테스트 클래스와 초기화 준비 / 8-4. 초기 입금부터 송금과 대사까지 확인하기
 
 `SecurityTestSupport.createSecurityFixture(ownerBalance, dailyLimit)`은 `owner`와 `other`, `410-001`과 `410-002`, 한도와 잔액만 준비합니다. 로그인 비밀번호는 `owner-pass`, `other-pass`이며 앞에서 구현한 PasswordEncoder와 암호화 Service를 사용합니다. 잔액만 준비한 샘플의 대사가 정상이라고 기대하지 않습니다.
+
+샘플의 `owner-mfa-secret`과 `other-mfa-secret`은 암호화 실습용 시크릿입니다. 추가 인증 기능은 구현하지 않습니다. 로그인 비밀번호, JWT 서명 키, 암호화 대상 시크릿의 용도를 구분하세요.
 
 초기 원장이 필요한 통합 실습은 잔액 0원으로 준비하고, `TransactionTemplate` 안에서 `FinancialTestData.openingDeposit()`을 한 번 호출합니다. 공개 메서드 `DmAccountBalance.increase()`와 `LedgerPostingService.post()`가 선행 구현입니다. 9인자 원장 DTO 생성자와 5인자 AccountPosting을 사용하며 `balanceAfter`는 `getLedgerBalance()`로 전달합니다.
 

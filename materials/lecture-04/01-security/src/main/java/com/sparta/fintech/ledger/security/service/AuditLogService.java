@@ -58,8 +58,8 @@ public class AuditLogService {
     }
 
     public static String safeText(String text, int maxLength) {
-        // TODO [특강 4 / 5-2] 감사 주체와 결과를 연결하고 입력 문자열을 제한해 중복 기록과 개인정보 노출을 막으세요.
-        throw new UnsupportedOperationException("TODO [특강 4 / 5-2] 감사 주체와 결과를 연결하고 입력 문자열을 제한해 중복 기록과 개인정보 노출을 막으세요.");
+        // TODO [특강 4 / 5-3-1] 줄바꿈과 탭을 공백으로 바꾸고 이메일과 숫자 패턴을 마스킹한 뒤 maxLength로 길이를 제한하세요.
+        throw new UnsupportedOperationException("TODO [특강 4 / 5-3-1] 줄바꿈과 탭을 공백으로 바꾸고 이메일과 숫자 패턴을 마스킹한 뒤 maxLength로 길이를 제한하세요.");
     }
 
     private static String safeResource(String value) {

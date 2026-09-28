@@ -5,7 +5,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-/** test 프로필의 전용 H2 DB에서만 사용하는 반복 실행 도우미입니다. */
+/** test 프로필의 전용 H2 DB에서 테스트 데이터를 삭제하는 초기화 코드입니다. */
 public final class TestDatabaseReset {
     private TestDatabaseReset() {}
 

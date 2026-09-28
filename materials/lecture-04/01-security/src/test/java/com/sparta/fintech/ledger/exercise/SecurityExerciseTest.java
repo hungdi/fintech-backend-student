@@ -22,6 +22,6 @@ class SecurityExerciseTest {
     void dailyLimitReplayAndDurableCompletion() {
         // TODO [특강 4 / 8-2] 누적 한도, 동일 요청 재시도와 동시에 다른 키의 송금을 검사하세요.
         // 완료 기록 저장 실패 시 송금도 롤백하고 재시도 시 완료 기록은 한 건이어야 합니다.
-        fail("TODO [특강 4 / 8-2] 일일 한도와 송금 완료 증거를 확인하세요.");
+        fail("TODO [특강 4 / 8-2] 일일 한도와 AhTransferCompletion의 송금 완료 기록을 확인하세요.");
     }
 }

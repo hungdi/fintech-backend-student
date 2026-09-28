@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.*;
 
-/** 동시에 Service를 호출하는 준비 도우미입니다. 잔액이나 성공 여부는 호출한 테스트에서 검증하세요. */
+/** 전달받은 요청을 여러 스레드에서 동시에 실행합니다. 잔액이나 성공 여부는 호출한 테스트에서 검증하세요. */
 public final class ConcurrentRequests {
     private ConcurrentRequests() {}
     public static <T> List<T> run(int count, Callable<T> request) throws Exception {

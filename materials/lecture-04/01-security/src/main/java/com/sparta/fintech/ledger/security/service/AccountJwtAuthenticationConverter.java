@@ -10,7 +10,7 @@ import org.springframework.security.oauth2.server.resource.authentication.JwtAut
 import org.springframework.stereotype.Component;
 
 @Component
-/** TODO [특강 4 / 2-5-1] 검증된 JWT의 계정 식별값으로 현재 DB 상태와 역할을 재확인하세요. */
+/** TODO [특강 4 / 2-5-1] 검증된 JWT의 계정 식별값으로 현재 DB의 계정 상태와 역할을 확인하고 Spring Security 인증 객체로 변환하세요. */
 public class AccountJwtAuthenticationConverter implements Converter<Jwt, AbstractAuthenticationToken> {
     private final AccountIdentityService identities;
 
@@ -20,7 +20,7 @@ public class AccountJwtAuthenticationConverter implements Converter<Jwt, Abstrac
 
     @Override
     public AbstractAuthenticationToken convert(Jwt jwt) {
-        // TODO [특강 4 / 2-5-1] 검증된 JWT의 계정 식별값으로 현재 DB 상태와 역할을 재확인하세요.
-        throw new UnsupportedOperationException("TODO [특강 4 / 2-5-1] 검증된 JWT의 계정 식별값으로 현재 DB 상태와 역할을 재확인하세요.");
+        // TODO [특강 4 / 2-5-1] 검증된 JWT의 계정 식별값으로 현재 DB의 계정 상태와 역할을 확인하고 Spring Security 인증 객체로 변환하세요.
+        throw new UnsupportedOperationException("TODO [특강 4 / 2-5-1] 검증된 JWT의 계정 식별값으로 현재 DB의 계정 상태와 역할을 확인하고 Spring Security 인증 객체로 변환하세요.");
     }
 }

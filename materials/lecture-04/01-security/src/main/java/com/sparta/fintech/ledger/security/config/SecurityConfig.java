@@ -32,7 +32,7 @@ import com.nimbusds.jose.jwk.source.ImmutableSecret;
 @EnableWebSecurity
 
 @EnableConfigurationProperties(SecurityProperties.class)
-/** TODO [특강 4 / 2-5-2] 로그인 공개 범위와 보호 API, JWT 검증 및 인증 실패 처리를 연결하세요. */
+/** TODO [특강 4 / 2-5-2] 인증 없이 호출할 로그인 API와 인증이 필요한 API를 구분하고 JWT 검증 및 인증 실패 처리를 연결하세요. */
 public class SecurityConfig {
 
     @Bean
@@ -43,8 +43,8 @@ public class SecurityConfig {
         com.sparta.fintech.ledger.security.service.AccountJwtAuthenticationConverter accountConverter,
         com.sparta.fintech.ledger.security.service.AuditLogService audit
     ) throws Exception {
-        // TODO [특강 4 / 2-5-2] 로그인 공개 범위와 보호 API, JWT 검증 및 인증 실패 처리를 연결하세요.
-        throw new UnsupportedOperationException("TODO [특강 4 / 2-5-2] 로그인 공개 범위와 보호 API, JWT 검증 및 인증 실패 처리를 연결하세요.");
+        // TODO [특강 4 / 2-5-2] 인증 없이 호출할 로그인 API와 인증이 필요한 API를 구분하고 JWT 검증 및 인증 실패 처리를 연결하세요.
+        throw new UnsupportedOperationException("TODO [특강 4 / 2-5-2] 인증 없이 호출할 로그인 API와 인증이 필요한 API를 구분하고 JWT 검증 및 인증 실패 처리를 연결하세요.");
     }
 
     @Bean
@@ -55,8 +55,8 @@ public class SecurityConfig {
 
     @Bean
     public TextEncryptor textEncryptor(SecurityProperties properties) {
-        // TODO [특강 4 / 4-1] 인증된 암호화를 지원하는 TextEncryptor를 설정하세요.
-        throw new UnsupportedOperationException("TODO [특강 4 / 4-1] 인증된 암호화를 지원하는 TextEncryptor를 설정하세요.");
+        // TODO [특강 4 / 4-1] AES-GCM으로 암호화하고 복호화 시 변조 여부를 검증하는 TextEncryptor를 설정하세요.
+        throw new UnsupportedOperationException("TODO [특강 4 / 4-1] AES-GCM으로 암호화하고 복호화 시 변조 여부를 검증하는 TextEncryptor를 설정하세요.");
     }
 
     @Bean
