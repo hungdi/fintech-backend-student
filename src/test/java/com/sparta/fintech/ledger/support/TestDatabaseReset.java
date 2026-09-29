@@ -4,12 +4,30 @@ import javax.sql.DataSource;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
 
 /** test 프로필의 전용 H2 DB에서 테스트 데이터를 삭제하는 초기화 코드입니다. */
 public final class TestDatabaseReset {
+    private static final Set<ExecutorService> concurrentExecutors = ConcurrentHashMap.newKeySet();
+
     private TestDatabaseReset() {}
 
+    static void trackConcurrentRequests(ExecutorService executor) {
+        concurrentExecutors.removeIf(ExecutorService::isTerminated);
+        concurrentExecutors.add(executor);
+    }
+
+    static void assertNoRunningRequests() {
+        concurrentExecutors.removeIf(ExecutorService::isTerminated);
+        if (!concurrentExecutors.isEmpty()) {
+            throw new IllegalStateException("종료하지 않은 동시 요청이 있어 테스트 DB를 초기화할 수 없습니다.");
+        }
+    }
+
     public static void clear(DataSource dataSource) throws SQLException {
+        assertNoRunningRequests();
         try (var connection = dataSource.getConnection()) {
             String url = connection.getMetaData().getURL();
             if (!url.equals("jdbc:h2:mem:fintech_student") && !url.startsWith("jdbc:h2:mem:fintech_student;")) {

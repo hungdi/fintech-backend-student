@@ -93,8 +93,8 @@ public class TransferProcessor {
         DmAccount depositAccount,
         BalancePair balances
     ) {
-        // TODO [특강 2 / 6-3] 추적 ID와 두 계좌의 거래 후 원장잔액 및 분개를 원장 DTO에 전달하세요.
-        throw new UnsupportedOperationException("TODO [특강 2 / 6-3] 추적 ID와 두 계좌의 거래 후 원장잔액 및 분개를 원장 DTO에 전달하세요.");
+        // TODO [특강 2 / 6-3] 추적 ID와 두 계좌의 거래 후 원장 금액 및 분개를 원장 DTO에 전달하세요.
+        throw new UnsupportedOperationException("TODO [특강 2 / 6-3] 추적 ID와 두 계좌의 거래 후 원장 금액 및 분개를 원장 DTO에 전달하세요.");
     }
 
     private BalancePair lockBalances(Long withdrawalAccountId, Long depositAccountId) {

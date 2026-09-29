@@ -27,14 +27,22 @@ public abstract class TransferTestSupport {
     void resetPracticeDatabase() throws Exception { TestDatabaseReset.clear(dataSource); }
 
     protected Accounts createTransferAccounts() {
+        return createTransferAccounts("1000000", "100000", "1000000");
+    }
+
+    /** 각 테스트에서 한 번 호출합니다. 송금 처리와 초기 원장 저장은 수행하지 않습니다. */
+    protected Accounts createTransferAccounts(String withdrawalBalance, String depositBalance, String perTransferLimit) {
+        BigDecimal withdrawalAmount = new BigDecimal(withdrawalBalance);
+        BigDecimal depositAmount = new BigDecimal(depositBalance);
+        BigDecimal limitAmount = new BigDecimal(perTransferLimit);
         var fromCustomer = customers.save(new CmCustomer("CUST-17", "박개발", "from@example.com", "010-1111-1111"));
         var toCustomer = customers.save(new CmCustomer("CUST-18", "강동원", "to@example.com", "010-2222-2222"));
         var from = accounts.save(new DmAccount(fromCustomer, "110-001", "월세 출금 계좌", "KRW"));
         var to = accounts.save(new DmAccount(toCustomer, "110-002", "월세 입금 계좌", "KRW"));
-        balances.save(new DmAccountBalance(from, new BigDecimal("1000000"), new BigDecimal("1000000")));
-        balances.save(new DmAccountBalance(to, new BigDecimal("100000"), new BigDecimal("100000")));
+        balances.save(new DmAccountBalance(from, withdrawalAmount, withdrawalAmount));
+        balances.save(new DmAccountBalance(to, depositAmount, depositAmount));
         limits.save(new DmAccountLimit(fromCustomer, from, LimitType.TRANSFER, LimitPeriod.PER_TRANSACTION,
-            new BigDecimal("1000000"), "KRW", LocalDate.now(clock).minusDays(1)));
+            limitAmount, "KRW", LocalDate.now(clock).minusDays(1)));
         codes.save(new LcLedgerAccount("210101", "고객예수금", DebitCreditType.CREDIT));
         return new Accounts(from.getAccountId(), to.getAccountId(), from.getAccountNo(), to.getAccountNo());
     }

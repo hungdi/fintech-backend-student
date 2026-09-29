@@ -52,8 +52,8 @@ public class SettlementService {
     }
 
     private Map<String, ExternalSettlementItem> indexExternalItems(List<ExternalSettlementItem> externalItems) {
-        // TODO [특강 3 / 4-6-3] 누락된 TID와 금액, 중복 TID, 음수와 저장 범위 초과를 결과 저장 전에 거절하세요.
-        throw new UnsupportedOperationException("TODO [특강 3 / 4-6-3] 누락된 TID와 금액, 중복 TID, 음수와 저장 범위 초과를 결과 저장 전에 거절하세요.");
+        // TODO [특강 3 / 4-5] 누락된 TID와 금액, 중복 TID, 음수와 저장 범위 초과를 결과 저장 전에 거절하세요. 4-6-3에서 입력 오류를 검증합니다.
+        throw new UnsupportedOperationException("TODO [특강 3 / 4-5] 누락된 TID와 금액, 중복 TID, 음수와 저장 범위 초과를 결과 저장 전에 거절하세요. 4-6-3에서 입력 오류를 검증합니다.");
     }
 
     private void requireText(String value, int maxLength, String name) {
