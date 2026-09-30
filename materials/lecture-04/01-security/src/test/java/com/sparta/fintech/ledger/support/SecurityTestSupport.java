@@ -3,14 +3,22 @@ package com.sparta.fintech.ledger.support;
 import com.sparta.fintech.ledger.domain.*;
 import com.sparta.fintech.ledger.repository.*;
 import com.sparta.fintech.ledger.security.service.SensitiveDataCryptoService;
+import com.sparta.fintech.ledger.reconciliation.service.DailyClosingService;
+import com.sparta.fintech.ledger.reconciliation.service.ReconciliationService;
+import com.sparta.fintech.ledger.service.LedgerPostingService;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.Clock;
+import java.time.Instant;
 import javax.sql.DataSource;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Import;
+import org.springframework.context.annotation.Primary;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -19,7 +27,18 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles({"test", "security-test"})
+@Import(SecurityTestSupport.TimeConfiguration.class)
 public abstract class SecurityTestSupport {
+    @TestConfiguration(proxyBeanMethods = false)
+    public static class TimeConfiguration {
+        @Bean
+        @Primary
+        MutableBusinessClock securityPracticeClock() {
+            // JWT 검증의 시스템 시각과 맞추고, 개별 날짜 경계 테스트에서만 시간을 진행합니다.
+            return new MutableBusinessClock(Instant.now());
+        }
+    }
+
     @Autowired protected MockMvc mockMvc;
     @Autowired protected PasswordEncoder passwordEncoder;
     @Autowired protected SensitiveDataCryptoService cryptoService;
@@ -31,11 +50,20 @@ public abstract class SecurityTestSupport {
     @Autowired protected DmAccountBalanceRepository accountBalanceRepository;
     @Autowired protected DmAccountLimitRepository accountLimitRepository;
     @Autowired protected LcLedgerAccountRepository ledgerAccountRepository;
+    @Autowired protected DailyClosingService dailyClosingService;
+    @Autowired protected SmAccountDailyClosingRepository dailyClosingRepository;
+    @Autowired protected ReconciliationService reconciliationService;
+    @Autowired protected LedgerPostingService ledgerPostingService;
+    @Autowired protected MutableBusinessClock practiceClock;
     @Autowired protected Clock clock;
     @Autowired protected DataSource dataSource;
     @BeforeEach
-    void resetPracticeDatabase() throws Exception { TestDatabaseReset.clear(dataSource); }
+    void resetPracticeDatabase() throws Exception {
+        practiceClock.set(Instant.now());
+        TestDatabaseReset.clear(dataSource);
+    }
     protected SecurityFixture createSecurityFixture(String ownerBalance, String dailyLimit) {
+        Instant openedAt = clock.instant();
         AcAuthRole customerRole = authRoleRepository.save(new AcAuthRole(
             "ROLE_CUSTOMER",
             "고객",
@@ -72,13 +100,15 @@ public abstract class SecurityTestSupport {
             ownerCustomer,
             "410-001",
             "보안 출금 계좌",
-            "KRW"
+            "KRW",
+            openedAt
         ));
         DmAccount otherAccount = accountRepository.save(new DmAccount(
             otherCustomer,
             "410-002",
             "타인 입금 계좌",
-            "KRW"
+            "KRW",
+            openedAt
         ));
         accountBalanceRepository.save(new DmAccountBalance(
             ownerAccount,

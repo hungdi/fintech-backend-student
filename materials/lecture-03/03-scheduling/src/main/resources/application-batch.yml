@@ -1,5 +1,8 @@
-# TODO [특강 3 / 5-1] UTC 02:00 예약식을 직접 정하고 환경변수 기본값으로 넣으세요.
-# 활성화 전까지 예약 실행을 멈춥니다.
+# TODO [특강 3 / 5-1 일별 마감 보완] UTC 00:10 마감 저장과 UTC 02:00 대사의 예약식을 각각 작성하세요.
+# 두 예약은 UTC 전날을 처리합니다. 활성화 전까지 예약 실행을 멈춥니다.
 reconciliation:
+  closing:
+    schedule:
+      cron: ${DAILY_CLOSING_CRON:-}
   schedule:
     cron: ${RECONCILIATION_CRON:-}
