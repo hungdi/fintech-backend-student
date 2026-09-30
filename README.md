@@ -28,7 +28,7 @@ Windows에서는 `gradlew.bat`을 사용합니다. 최초 실행 시 Wrapper와 
 | --- | --- |
 | 1. 도메인 설계 | 루트 `src`를 사용합니다. 2-1의 잔액 생성 전에 `StoredMoney`의 표현 범위와 0 이상 검증을 작성합니다. |
 | 2. 송금 | 1-2~1-3에 Web 의존성과 `01-request`, 2-1에 `02-processing`, 6-6에 `03-http`를 추가합니다. |
-| 3. 대사 | 2-2에 `01-internal`, 4-3에 `02-external`, 5장에 `03-scheduling`을 추가합니다. |
+| 3. 대사 | 2-2에 `01-internal`, 4장을 시작할 때 `02-external`, 5장에 `03-scheduling`을 추가합니다. |
 | 4. 보안 | 0장에 보안 의존성과 `01-security`, 8-4에 `02-integration`을 추가합니다. |
 
 파일을 추가하는 경로와 기존 메서드를 수정하는 위치는 [MATERIALS.md](MATERIALS.md)에 있습니다. 이미 작성한 파일은 그대로 두고 해당 절의 필드나 메서드만 추가합니다. IDE에서 `materials`를 별도의 source root로 등록하지 마세요.
@@ -44,9 +44,9 @@ Windows에서는 `gradlew.bat`을 사용합니다. 최초 실행 시 Wrapper와 
 | H2 통합 테스트 | 필요한 엔티티 매핑, Repository와 Service를 구현한 뒤 `test` 프로필을 사용합니다. `application-test.yml`의 `create-drop`이 테스트 테이블을 생성합니다. |
 | MySQL 실행 | 별도의 로컬 DB `fintech_student`에 매핑과 일치하는 DDL을 먼저 적용합니다. 기본 `ddl-auto: validate`는 테이블을 만들지 않습니다. |
 
-MySQL 접속은 `.env.example`을 참고해 IDE의 환경변수에 넣으세요. Spring Boot는 `.env` 파일을 자동으로 읽지 않습니다. 일부 엔티티만 구현한 상태에서는 전체 Spring 앱이나 DB 통합 테스트를 시작할 수 없습니다. 네이밍 실험은 필요한 매핑과 별도 실습 DB가 준비된 후 진행하고, 실험 후 기본 스네이크 케이스 설정으로 돌아옵니다.
+MySQL 접속은 `.env.example`을 참고해 IDE의 환경변수에 넣으세요. Spring Boot는 `.env` 파일을 자동으로 읽지 않습니다. 일부 엔티티만 구현한 상태에서는 전체 Spring 앱이나 DB 통합 테스트를 시작할 수 없습니다. 네이밍 테스트는 특강 #1을 마친 뒤 별도의 테스트 DB에서 진행해보세요. 테스트를 마치면 기본 스네이크 케이스 설정으로 돌아옵니다.
 
-기본 DB 통합 테스트는 H2를 사용합니다. `TestDatabaseReset`은 `jdbc:h2:mem:fintech_student`만 초기화하며, 미종료 동시 요청이 있으면 초기화를 거절합니다. 실제 MySQL의 Lock 검증은 별도 테스트 전용 스키마, 프로필과 초기화 코드를 준비해서 수행합니다. 제공 자료에는 `test-mysql` 프로필이 없으며 H2 테스트의 프로필 이름만 바꾸어 사용할 수 없습니다.
+기본 DB 통합 테스트는 H2를 사용합니다. `TestDatabaseReset`은 `jdbc:h2:mem:fintech_student`만 초기화하며, 아직 끝나지 않은 동시 요청이 있으면 예외가 발생해 초기화를 진행하지 않습니다. 실제 MySQL의 Lock 검증은 별도 테스트 전용 스키마, 프로필과 초기화 코드를 준비해서 수행합니다. 제공 자료에는 `test-mysql` 프로필이 없으며 H2 테스트의 프로필 이름만 바꾸어 사용할 수 없습니다.
 
 4강 자료 추가 후에는 DB 통합 테스트에 `test`와 `security-test`를 함께 적용합니다. `SecurityTestSupport`는 두 프로필을 이미 선언합니다. 앞 강의 테스트에 보안 프로필을 추가하는 위치와 일반 실행의 `security` 프로필은 [MATERIALS.md](MATERIALS.md)에 안내되어 있습니다.
 

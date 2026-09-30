@@ -11,8 +11,8 @@
 | 2강 1-2~1-3. HTTP 입력과 Service 요청 DTO | `lecture-02/dependencies.gradle`, `lecture-02/01-request` | 입력 필드와 검증기 연결 선언 | HTTP 금액 제약과 정확한 표현 범위 | 1강 `StoredMoney` |
 | 2강 2-1. 계좌를 조회하고 상태와 통화 검증하기 | `lecture-02/02-processing` | 추적 ID와 Clock 연결, Command와 Result, 실패 주입 계약, 샘플 데이터 생성 코드와 동시 요청 실행 코드 | 검증, 잔액, Lock, 요청 해시, 멱등성, 원장 연결 | 1강 원장 저장 |
 | 2강 6-6. Controller에서 송금 Service 호출하기 | `lecture-02/03-http` | HTTP 경로와 응답 DTO | Service 연결과 오류 응답 | 처리 Service와 결과 타입 |
-| 3강 2-2. 대사 테이블을 2개의 테이블로 나누기 | `lecture-03/01-internal` | 엔티티와 결과 계약, 고정 샘플 | 차이 계산, 비교 규칙과 상태 판정 | 1~2강 엔티티와 완료 시각 |
-| 3강 4-3. 외부 대사 설계하기 | `lecture-03/02-external` | JSON 13개와 파일 읽기 코드, 비교용 오더 샘플 | 범위 조회, 누락과 금액 비교, 입력 오류 거절 | 기관 코드와 Repository 추가 |
+| 3강 2-2. 대사 실행 기록과 상세 결과를 두 테이블로 나누기 | `lecture-03/01-internal` | 엔티티와 결과 계약, 고정 샘플 | 차이 계산, 비교 규칙과 상태 판정 | 1~2강 엔티티와 완료 시각 |
+| 3강 4장 시작. 외부 대사 자료 준비하기 | `lecture-03/02-external` | JSON 13개와 파일 읽기 코드, 비교용 오더 샘플 | 범위 조회, 누락과 금액 비교, 입력 오류 처리 | 기관 코드와 Repository 추가 |
 | 3강 5장. 대사 예약 실행 | `lecture-03/03-scheduling` | 주입과 호출 테스트 예제, 비활성 설정 | cron과 UTC 날짜, Service 호출 | 내부 대사 Service |
 | 4강 0장. 실습 준비 | `lecture-04/dependencies.gradle`, `lecture-04/01-security` | 설정 바인딩, DTO, 주입 및 테스트 환경 | 로그인, JWT 검증, 역할과 소유권, 마스킹, 감사 기록 | 3강까지 구현, 보안 의존성 추가 |
 | 4강 8-4. 초기 입금부터 송금과 대사까지 확인하기 | `lecture-04/02-integration` | 초기 입금 함수와 테스트 틀 | 입금, 로그인, 송금, 대사의 통합 검증 | 앞 강의의 잔액 변경과 원장 Service |
@@ -34,7 +34,7 @@
 | 2강 2-1 | `lecture-02/02-processing/src` | `TransferPreparationSmokeTest`, `ConcurrentRequestsTest`, 잔액 및 해시 단위테스트 | 아래 Repository 변경, 검증과 Lock, 원장 저장, 트랜잭션 |
 | 2강 6-6 | `lecture-02/03-http/src` | DTO와 기존 단위테스트 | Controller 연결과 오류 응답 구현 |
 | 3강 2-2 | `lecture-03/01-internal/src` | 결과 객체 계산 과제 | 아래 Repository 추가, 대사 엔티티 매핑과 비교 규칙 |
-| 3강 4-3 | 아래 오더 수정 후 `lecture-03/02-external/src` | `SettlementMaterialsSmokeTest`의 JSON 읽기 | 기관과 UTC 날짜 조회, 외부 대사와 정산 엔티티 |
+| 3강 4장 시작 | 아래 오더 수정 후 `lecture-03/02-external/src` | `SettlementMaterialsSmokeTest`의 JSON 읽기 | 기관과 UTC 날짜 조회, 외부 대사와 정산 엔티티 |
 | 3강 5장 | `lecture-03/03-scheduling/src` | `SchedulerExerciseTest`의 고정 Clock 호출 검사 | 예약 활성화와 cron 설정, 내부 대사 |
 | 4강 0장 | 보안 의존성 추가 후 `lecture-04/01-security/src` | `SecurityPreparationSmokeTest`는 선언 연결만 확인, 마스킹 단위테스트 | 보안 Bean과 Properties 값 검증, 사용자 매핑과 아래 변경 |
 | 4강 8-4 | `lecture-04/02-integration/src` | DTO 준비 검사는 유지 | 초기 입금과 로그인, 송금 및 대사 구현 |
@@ -51,9 +51,9 @@
 
 ### 2-1의 잔액 생성 전에: StoredMoney 검증 작성하기
 
-`DmAccountBalance` 생성자는 `StoredMoney.nonNegative()`를 호출합니다. 잔액 객체 생성과 저장 과제보다 먼저 `isRepresentable()`, `exact()`, `nonNegative()`를 구현하세요. 금액은 `DECIMAL(19,2)`에 반올림 없이 표현 가능해야 하며, 잔액은 null과 음수를 거절합니다. `0.005`와 `100000000000000000`은 거절하고, `300.000`과 `0.0100`은 값이 달라지지 않으므로 허용합니다. 0원 잔액도 허용합니다.
+`DmAccountBalance` 생성자는 `StoredMoney.nonNegative()`를 호출합니다. 잔액 객체 생성과 저장 과제보다 먼저 `isRepresentable()`, `exact()`, `nonNegative()`를 구현하세요. 금액은 `DECIMAL(19,2)`에 반올림 없이 저장할 수 있어야 합니다. `nonNegative()`에 null, 음수, `0.005` 또는 `100000000000000000`을 넣으면 `IllegalArgumentException`이 발생해야 합니다. `300.000`과 `0.0100`은 각각 300.00과 0.01로, 0은 0.00으로 반환합니다.
 
-강의의 상세 금액 검증 설명은 2강 1-2에 있습니다. 학생용 자료에서는 위 세 메서드를 1강 2-1의 선행 구현으로 먼저 작성합니다. 양수 거래 금액 검사인 `positive()`는 1강 4-2에서 추가합니다. 검증을 생략하거나 입력값을 그대로 반환해서 잔액 생성 과제를 통과시키지 않습니다.
+잔액의 금액 검증은 특강 #1 2-1에서 위 세 메서드로 작성합니다. 양수 거래 금액 검사인 `positive()`는 1강 4-2에서 추가합니다. 검증을 생략하거나 입력값을 그대로 반환해서 잔액 생성 과제를 통과시키지 않습니다.
 
 ### 4-2. 전표를 상세 내역과 연결하기 / 6-1. 원장 저장 순서와 트랜잭션
 
@@ -73,7 +73,7 @@
 
 `materials/lecture-02/dependencies.gradle`의 Web 의존성 한 줄을 루트 `build.gradle`의 기존 `dependencies` 안에 추가합니다. 기존 JPA와 Validation 의존성은 유지하고, `dependencies` 블록을 중첩하지 않습니다. 이어서 `01-request/src`를 추가합니다. Controller는 `03-http`를 가져오는 6-6에서 추가합니다.
 
-### 2-2. 유효한 1회 송금 한도 검증 / 4-3. 두 계좌의 Lock 대상과 교착상태(Deadlock) 방지
+### 2-2. 1회 송금 한도 검증 / 4-2. 잔액 Lock 조회 / 4-3. 두 계좌의 Lock 획득 순서
 
 다음 선언을 기존 Repository 안에 추가합니다. `java.util.List`, `java.util.Optional`과 해당 도메인 타입을 import하세요.
 
@@ -82,9 +82,9 @@
 List<DmAccountLimit> findByAccountAccountIdAndLimitTypeAndActiveTrue(Long accountId, LimitType limitType);
 
 // DmAccountBalanceRepository에 추가할 유효한 미완성 선언
-// TODO [특강 2 / 4-3] 완료할 때 default 본문을 없애고 단건 JPQL과 비관적 Lock을 적용하세요.
+// TODO [특강 2 / 4-2] default 본문을 없애고 단건 JPQL과 비관적 Lock을 적용하세요.
 default Optional<DmAccountBalance> findByAccountIdForUpdate(Long accountId) {
-    throw new UnsupportedOperationException("TODO [특강 2 / 4-3] 계좌별 잔액 Lock 조회를 구현하세요.");
+    throw new UnsupportedOperationException("TODO [특강 2 / 4-2] 계좌별 잔액 Lock 조회를 구현하세요.");
 }
 ```
 
@@ -100,9 +100,9 @@ default Optional<DmAccountBalance> findByAccountIdForUpdate(Long accountId) {
 
 ### 5-4와 6-5. 기존 오더 처리의 메서드 인자 연결하기
 
-`handleExistingOrder(TransferCommand command, String requestHash, DmTransferOrder order)`의 세 인자 선언을 유지합니다. 6-5의 기존 오더 처리 경로에서도 `handleExistingOrder(command, requestHash, existing)`으로 호출하세요. 강의의 두 인자 예시를 그대로 붙이거나 같은 역할의 별칭 메서드를 추가하지 않습니다.
+`handleExistingOrder(TransferCommand command, String requestHash, DmTransferOrder order)`의 세 인자 선언을 유지합니다. 6-5의 기존 오더 처리 경로에서도 `handleExistingOrder(command, requestHash, existing)`으로 호출하세요. 5-4의 메서드 선언과 6-5의 호출에서 세 인자의 순서와 타입을 동일하게 맞춥니다.
 
-6-3의 DTO 생성은 `TransferProcessor.toLedgerPostingCommand()`, 거래 출처 구분은 `LedgerPostingService.postTransfer()`와 `DmTransaction.markTransferApi()`를 수정합니다. 강의의 두 ‘6-3-1’은 제목과 이 메서드명으로 구분하세요.
+6-3의 DTO 생성은 `TransferProcessor.toLedgerPostingCommand()`, 거래 출처 구분은 `LedgerPostingService.postTransfer()`와 `DmTransaction.markTransferApi()`를 수정합니다. 6-3-1에서는 원장 DTO를 구성하고, 6-3-2에서는 원장 실습과 API 송금의 출처를 구분합니다.
 
 6-4-1의 오류 응답은 독립 파일 `transfer.web.ErrorResponse`를 사용합니다. `TransferExceptionHandler` 안에 같은 record를 중복 선언하지 않습니다. HTTP 파일은 6-6에 추가하고, 4강 6-1에서 공통 패키지로 옮깁니다.
 
@@ -116,13 +116,13 @@ default Optional<DmAccountBalance> findByAccountIdForUpdate(Long accountId) {
 var sample = createTransferAccounts("1000.00", "100.00", "1000.00");
 ```
 
-300원 송금 후 출금 잔액은 700원, 입금 잔액은 400원입니다. `sample.fromId()`와 `toId()`는 DB 계좌 ID, `fromNo()`와 `toNo()`는 계좌번호입니다. 강의의 `TransferSampleData.withdrawalAccountNo()`와 `depositAccountNo()` 자리에 각각 `fromNo()`와 `toNo()`를 사용합니다. `createSampleData()`를 별도로 작성하거나 두 생성 함수를 같은 테스트에서 함께 호출하지 않습니다.
+300원 송금 후 출금 잔액은 700원, 입금 잔액은 400원입니다. `sample.fromId()`와 `toId()`는 DB 계좌 ID, `fromNo()`와 `toNo()`는 계좌번호입니다. `TransferTestSupport.Accounts`의 반환 필드를 사용해 송금 요청을 구성하세요. 테스트마다 `createTransferAccounts()`를 한 번 호출합니다.
 
 인자 없는 `createTransferAccounts()`도 유지합니다. 기본값은 출금 1,000,000원, 입금 100,000원, 1회 한도 1,000,000원입니다. 이 경우 300,000원 송금 후 700,000원과 400,000원입니다. 두 형태 모두 초기 원장을 만들지 않으므로 3강 정상 대사 샘플로 쓰지 않습니다.
 
 ### 7-1-3과 7-5. 요청별 결과와 예외를 모아 동시성 확인하기
 
-강의의 `runConcurrently()` 대신 `ConcurrentRequests.run(int, IntFunction)`을 사용합니다. 요청 인덱스는 0부터 시작하며 `Attempt`의 `index()`, `result()`, `error()`, `succeeded()`로 각 시도의 결과를 읽습니다. 반환 순서는 인덱스 순서입니다. `ConcurrentRequests`, `TransferCommand`와 `BigDecimal`을 import하고, 준비한 `sample`과 주입한 `transferService`로 다음 호출을 구성합니다.
+7-1-3과 7-5에서는 제공된 `ConcurrentRequests.run(int, IntFunction)`으로 요청을 동시에 실행합니다. 요청 인덱스는 0부터 시작하며 `Attempt`의 `index()`, `result()`, `error()`, `succeeded()`로 각 시도의 결과를 읽습니다. 반환 순서는 인덱스 순서입니다. `ConcurrentRequests`, `TransferCommand`와 `BigDecimal`을 import하고, 준비한 `sample`과 주입한 `transferService`로 다음 호출을 구성합니다.
 
 ```java
 var attempts = ConcurrentRequests.run(5, index -> transferService.transfer(
@@ -176,7 +176,7 @@ List<DmTransferOrder> findByTransferOrderStatus(TransferOrderStatus transferOrde
 
 ### 3-6. 회계원장의 차변과 대변 비교하기 / 6-3. 기본 규칙이 놓치는 오류도 테스트하기
 
-`materials/lecture-03/01-internal/corruption-cases.json`은 DB를 변경할 대상과 기대 상태를 구분한 실험 자료입니다. 자동으로 DB를 수정하지 않습니다. 각 사례는 정상 샘플을 새로 적재한 상태에서 시작하고, `T-TRANSFER`의 행만 수정합니다.
+`materials/lecture-03/01-internal/corruption-cases.json`은 DB를 변경할 대상과 기대 상태를 구분한 테스트 자료입니다. 자동으로 DB를 수정하지 않습니다. 각 사례는 정상 샘플을 새로 적재한 상태에서 시작하고, `T-TRANSFER`의 행만 수정합니다.
 
 | 변경 대상 | 거래와 전표 | 전표와 회계원장 | 회계원장 차대 합계 |
 | --- | --- | --- | --- |
@@ -185,9 +185,9 @@ List<DmTransferOrder> findByTransferOrderStatus(TransferOrderStatus transferOrde
 
 고객예수금 원장의 고객 계좌만 다른 정상 계좌로 바꾼 사례도 추가하세요. 단순히 금액이 같다는 이유로 정상 처리해서는 안 됩니다. 비교 결과를 저장하면서 원본 금융 기록을 수정하지 않습니다.
 
-### 4-3. 외부 대사 설계하기 / 4-5. Service에서 자료를 비교하고 결과 저장하기
+### 4장 시작. 외부 대사 자료 준비하기 / 4-5. Service에서 자료를 비교하고 결과 저장하기
 
-4-3에서 외부 대사 자료를 처음 확인합니다. `02-external/src`를 추가하기 전에 기존 `DmTransferOrder`에 다음을 추가합니다.
+4장을 시작할 때 외부 대사 자료를 준비합니다. `02-external/src`를 추가하기 전에 기존 `DmTransferOrder`에 다음을 추가합니다.
 
 - `String externalInstitutionCode` 필드와 `getExternalInstitutionCode()`를 추가합니다. DB 길이는 30, 생성 후 변경하지 않는 필드입니다.
 - 기존 10인자 생성자를 유지하고 마지막에 `String externalInstitutionCode`를 받는 11인자 생성자를 추가합니다. 기존 생성자는 null 기관을 전달해 위임하도록 정리하고, 기관 값이 있으면 `[A-Z0-9_-]{1,30}` 형식인지 검사합니다. 기존 필드 초기화와 `PROCESSING` 상태를 보존합니다.
@@ -199,7 +199,7 @@ List<DmTransferOrder> findByTransferOrderStatus(TransferOrderStatus transferOrde
 public DmTransferOrder(String idempotencyKey, String requestHash, String tid, String gid,
     String journalTid, String accountingLedgerTid, DmAccount withdrawalAccount, DmAccount depositAccount,
     BigDecimal amount, String currencyCode, String externalInstitutionCode) {
-    throw new UnsupportedOperationException("TODO [특강 3 / 3-1-3] 기존 초기화와 기관 코드 검증을 연결하세요.");
+    throw new UnsupportedOperationException("TODO [특강 3 / 4장 시작] 기존 초기화 코드를 유지하고 기관 코드 검증을 구현하세요.");
 }
 ```
 
@@ -228,7 +228,7 @@ default List<DmTransferOrder> findSettlementTargets(java.time.Instant startAt, j
 
 `ReconciliationTestSupport`는 같은 초기 입금과 송금에 외부 비교용 오더를 함께 준비합니다. 기관은 `OTHER-BANK`, 통화는 `KRW`, 완료 시각은 기준일 UTC 12:00입니다. 실제 은행 통신은 하지 않습니다. 내부 대사는 현재 전체 원장과 잔액을 비교하고, 외부 대사는 기관과 UTC 하루 범위를 한정합니다.
 
-`SettlementService.indexExternalItems()`는 4-5의 `calculate()` 연결 전에 구현합니다. TID와 금액 누락, 중복 TID, 음수와 저장 범위 초과를 결과 저장 전에 거절하세요. 4-6-3은 이 검증의 오류 사례를 검사하는 절입니다. JSON 읽기 코드에 이 업무 검증을 옮기지 않습니다.
+`SettlementService.indexExternalItems()`는 4-5의 `calculate()` 연결 전에 구현합니다. TID나 금액이 없거나 TID가 중복되면 결과를 저장하기 전에 `IllegalArgumentException`을 발생시키세요. 금액이 음수이거나 저장 범위를 넘는 경우도 같은 예외로 처리합니다. 4-6-3은 이 검증의 오류 사례를 검사하는 절입니다. JSON 읽기 코드에 이 업무 검증을 옮기지 않습니다.
 
 4-6의 `SettlementExerciseTest`는 외부 대사용 `ReconciliationTestSupport`를 상속합니다. 이 클래스의 `createSampleData()`는 `OTHER-BANK` 기관의 완료된 `T-TRANSFER` 오더까지 준비합니다. 앞의 내부 대사 테스트는 기존 `InternalReconciliationTestSupport`를 계속 사용합니다. 한 테스트에서 두 샘플을 함께 적재하지 않습니다.
 
@@ -236,7 +236,7 @@ default List<DmTransferOrder> findSettlementTargets(java.time.Instant startAt, j
 
 파일은 `materials/lecture-03/02-external/src/test/resources/settlement/`에 있습니다. `SettlementJson.read()`가 반환한 `input`의 세 값만 `SettlementService.calculate()`에 전달합니다. `expected`와 `expectedError`는 테스트에서만 사용하세요. `SettlementJson.read()`는 중복 TID나 잘못된 금액도 그대로 DTO로 변환하므로 Service의 입력 검증을 확인할 수 있습니다.
 
-강의의 `readBankFixture("normal")`와 `readExternalItems()`는 아래 호출로 대신합니다. 파일 확장자 `.json`까지 전달하세요. `settlementService`는 `SettlementExerciseTest`에 주입해서 사용합니다.
+`SettlementJson.read("normal.json")`으로 파일을 읽고, 반환된 `Sample.input()`에서 날짜, 기관 코드와 거래 목록을 읽어 `calculate()`의 세 인자로 전달합니다. 파일 확장자 `.json`까지 전달하세요. `settlementService`는 `SettlementExerciseTest`에 주입해서 사용합니다.
 
 ```java
 createSampleData();
@@ -372,13 +372,13 @@ HTTP 요청을 위한 `login()`, `bearer()`, `transferBody()`, 응답 JSON 읽�
 | 3강 4-6-2 | `SettlementExerciseTest.suppliedFilesDetectDifferencesMissingRowsAndOffsettingTotals()` | `ReconciliationTestSupport`의 기관 오더와 정상 형식 JSON 6개, 재실행 검증 |
 | 3강 4-6-3 | `SettlementExerciseTest.invalidInputIsRejectedWithoutSavingResults()` | 입력 오류 JSON 7개와 결과 미저장 검증 |
 | 3강 5-3 | `SchedulerExerciseTest.passesUtcDateToReconciliation()` | 고정 Clock과 Mock으로 Service 호출 검증. 실제 cron 발동은 별도 실행 확인 |
-| 4강 3-1 | `SecurityExerciseTest.masksAccountNumber()` | DB 없는 마스킹 검증 |
+| 4강 4-2부터 4-4 | `SecurityExerciseTest.masksAccountNumber()` | DB 없는 마스킹 검증 |
 | 4강 7-1~7-3 | `SecurityIntegrationExerciseTest.loginOwnershipRoleAndTokenFailures()` | `SecurityTestSupport`로 로그인, 소유권, 역할, 만료 및 변조 토큰 검증 |
 | 4강 8-2 | `SecurityIntegrationExerciseTest.dailyLimitReplayAndDurableCompletion()` | 누적 한도, 재시도, 동시 요청과 송금 완료 기록 검증 |
 | 4강 8-4 | `OpeningDepositExerciseTest.openingDepositWithHeldFundsRecordsLedgerBalance()` | 원장 금액 100원, 사용가능잔액 80원에서 입금 후 balanceAfter 검증 |
 | 4강 8-4 | `OpeningDepositExerciseTest.loginTransferReplayAndReconciliationUseCompleteOpeningLedger()` | 0원 계좌의 초기 원장부터 로그인, 송금과 대사까지 확인 |
 
-강의의 `TransferServiceIntegrationTest`에 해당하는 DB 과제는 `TransferIntegrationExerciseTest`, `FinancialSecurityIntegrationTest`에 해당하는 과제는 `SecurityIntegrationExerciseTest`에서 작성합니다. 추가한 강의의 과제만 먼저 선택하려면 루트에서 다음 명령을 사용합니다.
+2강의 송금 DB 과제는 `TransferIntegrationExerciseTest`, 4강의 보안 API 과제는 `SecurityIntegrationExerciseTest`에서 작성합니다. 추가한 강의의 과제만 먼저 선택하려면 루트에서 다음 명령을 사용합니다.
 
 ```sh
 ./gradlew test --tests '*TransferRequestExerciseTest' --tests '*TransferExerciseTest' --tests '*TransferIntegrationExerciseTest'
