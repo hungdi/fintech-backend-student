@@ -81,8 +81,8 @@ public class ReconciliationService {
         LocalDate baseDate,
         List<SiReconciliationResult> results
     ) {
-        // TODO [특강 3 / 3-2] 완료 거래의 누적 입출금으로 구한 잔액과 현재 원장잔액을 비교하세요.
-        throw new UnsupportedOperationException("TODO [특강 3 / 3-2] 완료 거래의 누적 입출금으로 구한 잔액과 현재 원장잔액을 비교하세요.");
+        // TODO [특강 3 / 3-2] 완료 거래의 누적 입출금으로 구한 잔액과 현재 원장 금액을 비교하세요.
+        throw new UnsupportedOperationException("TODO [특강 3 / 3-2] 완료 거래의 누적 입출금으로 구한 잔액과 현재 원장 금액을 비교하세요.");
     }
 
     private void reconcileTransactionsWithAccountTransactions(
@@ -142,8 +142,8 @@ public class ReconciliationService {
 
     private boolean hasMatchingLedgerLines(LmJournalEntry journal, List<LiJournalEntryLine> lines,
                                           List<LiAccountingLedger> ledgers) {
-        // TODO [특강 3 / 6-3] 금액과 참조가 일치해도 실제 출금 및 입금 고객 계좌가 다르면 불일치로 판정하세요.
-        throw new UnsupportedOperationException("TODO [특강 3 / 6-3] 금액과 참조가 일치해도 실제 출금 및 입금 고객 계좌가 다르면 불일치로 판정하세요.");
+        // TODO [특강 3 / 3-5] 요청 금액, 전표 상세와 원장 참조 및 고객 계좌를 대조하세요. 6-3에서는 추가 오류 사례를 검증합니다.
+        throw new UnsupportedOperationException("TODO [특강 3 / 3-5] 요청 금액, 전표 상세와 원장 참조 및 고객 계좌를 대조하세요. 6-3에서는 추가 오류 사례를 검증합니다.");
     }
 
     private BigDecimal journalDebitAmount(LmJournalEntry journal) {
@@ -157,8 +157,8 @@ public class ReconciliationService {
     }
 
     private BigDecimal accountTransactionBalance(List<DiAccountTransaction> items) {
-        // TODO [특강 3 / 3-2] 완료 거래의 입금과 출금을 구분해 기대 원장잔액을 계산하세요.
-        throw new UnsupportedOperationException("TODO [특강 3 / 3-2] 완료 거래의 입금과 출금을 구분해 기대 원장잔액을 계산하세요.");
+        // TODO [특강 3 / 3-2] 완료 거래의 입금과 출금을 구분해 기대 원장 금액을 계산하세요.
+        throw new UnsupportedOperationException("TODO [특강 3 / 3-2] 완료 거래의 입금과 출금을 구분해 기대 원장 금액을 계산하세요.");
     }
 
     private BigDecimal transactionExpectedAccountTransactionAmount(DmTransaction transaction) {

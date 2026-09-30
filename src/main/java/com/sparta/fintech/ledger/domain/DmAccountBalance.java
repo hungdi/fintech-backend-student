@@ -13,7 +13,7 @@ import jakarta.persistence.UniqueConstraint;
 import jakarta.persistence.Version;
 import java.math.BigDecimal;
 
-/** TODO [특강 1 / 2-1] 계좌별 잔액 행과 원장잔액, 사용가능잔액의 매핑을 작성하세요. 필드와 생성자, getter는 호출 계약으로 제공합니다. */
+/** TODO [특강 1 / 2-1] 계좌별 잔액 행과 원장 금액, 사용가능잔액의 매핑을 작성하세요. 필드와 생성자, getter는 호출 계약으로 제공합니다. */
 public class DmAccountBalance extends BaseTimeEntity {
 
     private Long accountBalanceId;
@@ -29,10 +29,11 @@ public class DmAccountBalance extends BaseTimeEntity {
     protected DmAccountBalance() {
     }
 
+    // 2-1의 잔액 생성 과제 전에 StoredMoney의 표현 범위와 0 이상 검증을 구현하세요.
     public DmAccountBalance(DmAccount account, BigDecimal ledgerBalance, BigDecimal availableBalance) {
         this.account = account;
-        this.ledgerBalance = StoredMoney.nonNegative(ledgerBalance, "장부 잔액");
-        this.availableBalance = StoredMoney.nonNegative(availableBalance, "사용 가능 잔액");
+        this.ledgerBalance = StoredMoney.nonNegative(ledgerBalance, "원장 금액");
+        this.availableBalance = StoredMoney.nonNegative(availableBalance, "사용가능잔액");
     }
 
     public void increase(BigDecimal amount) {

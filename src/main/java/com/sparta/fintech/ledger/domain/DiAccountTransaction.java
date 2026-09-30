@@ -16,7 +16,7 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.Objects;
 
-/** TODO [특강 1 / 3-1] 거래와 계좌 참조를 연결하고 거래 직후 원장잔액을 매핑하세요. 필드와 생성자, getter는 호출 계약으로 제공합니다. */
+/** TODO [특강 1 / 3-1] 거래와 계좌 참조를 연결하고 거래 직후 원장 금액을 매핑하세요. 필드와 생성자, getter는 호출 계약으로 제공합니다. */
 public class DiAccountTransaction extends BaseTimeEntity {
 
     private Long accountTransactionItemId;

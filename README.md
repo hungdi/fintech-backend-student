@@ -2,6 +2,8 @@
 
 1강에서 만든 고객과 계좌에 송금, 대사, 보안 기능을 차례로 추가하는 학생용 프로젝트입니다. 업무 메서드의 `TODO [특강 번호 / 절]`을 직접 구현하세요. 같은 프로젝트를 4강까지 이어 사용합니다.
 
+[학생용 저장소](https://github.com/hungdi/fintech-backend-student)의 자료를 사용합니다. [MATERIALS.md](MATERIALS.md)의 최초 적용 시점과 테스트 대응표를 함께 확인하세요.
+
 ## 시작하기
 
 Java 17과 Gradle Wrapper 9.7.1, Spring Boot 3.5.16을 사용합니다. IDE에서 이 폴더의 `build.gradle`을 여세요. 패키지는 `com.sparta.fintech.ledger`입니다.
@@ -24,18 +26,29 @@ Windows에서는 `gradlew.bat`을 사용합니다. 최초 실행 시 Wrapper와 
 
 | 강의 | 진행 방법 |
 | --- | --- |
-| 1. 도메인 설계 | 루트 `src`에서 엔티티 관계, DB 제약과 원장 저장을 작성합니다. |
-| 2. 송금 | `materials/lecture-02`를 요청 DTO, 처리 Service, Controller 순으로 추가합니다. |
-| 3. 대사 | `materials/lecture-03`의 내부 비교, 외부 자료 비교, 예약 실행을 차례로 추가합니다. |
-| 4. 보안 | `materials/lecture-04`의 의존성과 보안 코드를 추가하고, 기존 송금 Controller와 Service를 연결합니다. |
+| 1. 도메인 설계 | 루트 `src`를 사용합니다. 2-1의 잔액 생성 전에 `StoredMoney`의 표현 범위와 0 이상 검증을 작성합니다. |
+| 2. 송금 | 1-2~1-3에 Web 의존성과 `01-request`, 2-1에 `02-processing`, 6-6에 `03-http`를 추가합니다. |
+| 3. 대사 | 2-2에 `01-internal`, 4장을 시작할 때 `02-external`, 5장에 `03-scheduling`을 추가합니다. |
+| 4. 보안 | 0장에 보안 의존성과 `01-security`, 8-4에 `02-integration`을 추가합니다. |
 
 파일을 추가하는 경로와 기존 메서드를 수정하는 위치는 [MATERIALS.md](MATERIALS.md)에 있습니다. 이미 작성한 파일은 그대로 두고 해당 절의 필드나 메서드만 추가합니다. IDE에서 `materials`를 별도의 source root로 등록하지 마세요.
 
 ## 로컬 DB 실습
 
-DB 테스트는 H2 메모리 DB를 사용하는 `test` 프로필로 진행합니다. JPA 매핑, 상태 변경과 필요한 Service를 작성한 뒤 해당 통합 테스트를 추가하세요. 준비 상태 검사에는 DB가 필요하지 않습니다. H2 테스트와 실제 MySQL의 Lock 검증은 구분합니다.
+실행 범위에 맞는 준비를 마친 뒤 다음 순서로 진행하세요.
 
-MySQL을 사용할 때는 별도의 로컬 실습 DB `fintech_student`를 만들고, `.env.example`을 참고해 IDE의 환경변수에 접속값을 넣으세요. Spring Boot는 `.env` 파일을 자동으로 읽지 않습니다. 기본 설정은 `ddl-auto: validate`입니다. 직접 설계한 테이블과 매핑이 일치해야 앱을 시작할 수 있습니다. 네이밍 실험 후에는 기본 스네이크 케이스 설정으로 돌아옵니다.
+| 범위 | 필요한 준비와 설정 |
+| --- | --- |
+| SQL 단독 실습 | JPA용 DB와 구분한 로컬 실습 DB에 직접 DDL과 SQL을 작성합니다. |
+| DB 없는 준비 테스트 | `smokeTest`로 DTO와 UTC Clock, 추가한 자료의 기술 코드를 확인합니다. |
+| H2 통합 테스트 | 필요한 엔티티 매핑, Repository와 Service를 구현한 뒤 `test` 프로필을 사용합니다. `application-test.yml`의 `create-drop`이 테스트 테이블을 생성합니다. |
+| MySQL 실행 | 별도의 로컬 DB `fintech_student`에 매핑과 일치하는 DDL을 먼저 적용합니다. 기본 `ddl-auto: validate`는 테이블을 만들지 않습니다. |
+
+MySQL 접속은 `.env.example`을 참고해 IDE의 환경변수에 넣으세요. Spring Boot는 `.env` 파일을 자동으로 읽지 않습니다. 일부 엔티티만 구현한 상태에서는 전체 Spring 앱이나 DB 통합 테스트를 시작할 수 없습니다. 네이밍 테스트는 특강 #1을 마친 뒤 별도의 테스트 DB에서 진행해보세요. 테스트를 마치면 기본 스네이크 케이스 설정으로 돌아옵니다.
+
+기본 DB 통합 테스트는 H2를 사용합니다. `TestDatabaseReset`은 `jdbc:h2:mem:fintech_student`만 초기화하며, 아직 끝나지 않은 동시 요청이 있으면 예외가 발생해 초기화를 진행하지 않습니다. 실제 MySQL의 Lock 검증은 별도 테스트 전용 스키마, 프로필과 초기화 코드를 준비해서 수행합니다. 제공 자료에는 `test-mysql` 프로필이 없으며 H2 테스트의 프로필 이름만 바꾸어 사용할 수 없습니다.
+
+4강 자료 추가 후에는 DB 통합 테스트에 `test`와 `security-test`를 함께 적용합니다. `SecurityTestSupport`는 두 프로필을 이미 선언합니다. 앞 강의 테스트에 보안 프로필을 추가하는 위치와 일반 실행의 `security` 프로필은 [MATERIALS.md](MATERIALS.md)에 안내되어 있습니다.
 
 서버와 테스트는 로컬 학습용입니다. 보안 의존성과 환경변수는 4강에서 추가합니다. 비밀값은 코드에 넣지 않고 환경변수로 전달하세요. 샘플의 이름과 연락처, 제공자 주소와 테스트 키는 실습용 값입니다.
 

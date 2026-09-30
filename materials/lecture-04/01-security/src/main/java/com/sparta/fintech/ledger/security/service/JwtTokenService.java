@@ -11,7 +11,7 @@ import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
 import org.springframework.stereotype.Service;
 
 @Service
-/** TODO [특강 4 / 2-3] 현재 고객과 역할의 Claim, 발급자 및 UTC 만료 시각을 넣어 JWT를 발급하세요. */
+/** TODO [특강 4 / 2-3] 발급 시점의 고객과 역할 정보 Claim, 발급자 및 UTC 만료 시각을 넣어 JWT를 발급하세요. */
 public class JwtTokenService {
 
     private final Clock clock;
@@ -24,13 +24,14 @@ public class JwtTokenService {
         this.securityProperties = securityProperties;
     }
 
+    // API 인가는 AccountJwtAuthenticationConverter가 조회한 현재 DB 역할을 사용합니다.
     public String issue(CurrentUser currentUser) {
-        // TODO [특강 4 / 2-3] 현재 고객과 역할의 Claim, 발급자 및 UTC 만료 시각을 넣어 JWT를 발급하세요.
-        throw new UnsupportedOperationException("TODO [특강 4 / 2-3] 현재 고객과 역할의 Claim, 발급자 및 UTC 만료 시각을 넣어 JWT를 발급하세요.");
+        // TODO [특강 4 / 2-3] 발급 시점의 고객과 역할 정보 Claim, 발급자 및 UTC 만료 시각을 넣어 JWT를 발급하세요.
+        throw new UnsupportedOperationException("TODO [특강 4 / 2-3] 발급 시점의 고객과 역할 정보 Claim, 발급자 및 UTC 만료 시각을 넣어 JWT를 발급하세요.");
     }
 
     public long expiresInSeconds() {
-        // TODO [특강 4 / 2-3] 현재 고객과 역할의 Claim, 발급자 및 UTC 만료 시각을 넣어 JWT를 발급하세요.
-        throw new UnsupportedOperationException("TODO [특강 4 / 2-3] 현재 고객과 역할의 Claim, 발급자 및 UTC 만료 시각을 넣어 JWT를 발급하세요.");
+        // TODO [특강 4 / 2-3] 발급 시점의 고객과 역할 정보 Claim, 발급자 및 UTC 만료 시각을 넣어 JWT를 발급하세요.
+        throw new UnsupportedOperationException("TODO [특강 4 / 2-3] 발급 시점의 고객과 역할 정보 Claim, 발급자 및 UTC 만료 시각을 넣어 JWT를 발급하세요.");
     }
 }

@@ -1,11 +1,12 @@
 package com.sparta.fintech.ledger.exercise;
 
+import com.sparta.fintech.ledger.support.ReconciliationTestSupport;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.fail;
 
 @Tag("exercise")
-class SettlementExerciseTest {
+class SettlementExerciseTest extends ReconciliationTestSupport {
     @Test
     void suppliedFilesDetectDifferencesMissingRowsAndOffsettingTotals() {
         // TODO [특강 3 / 4-6-2] ReconciliationTestSupport.createSampleData로 완료 오더를 준비하세요.
