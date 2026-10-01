@@ -20,7 +20,7 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
 
-/** MATERIALS.md의 3-2 보완 계약을 기존 DmAccountBalance에 추가한 뒤 사용할 테스트 지원입니다. */
+/** MATERIALS.md의 2-5-2 업무일 계약을 기존 DmAccountBalance에 추가한 뒤 사용할 테스트 지원입니다. */
 @ActiveProfiles("test")
 @SpringBootTest
 @Import(InternalReconciliationTestSupport.TimeConfiguration.class)
@@ -120,7 +120,7 @@ public abstract class InternalReconciliationTestSupport {
     }
 
     /**
-     * 3-2 확장의 마감 엔티티·업무일 과제를 완성한 뒤 사용합니다.
+     * 2-5-1~2-5-2의 마감 엔티티·업무일 과제를 완성한 뒤 사용합니다.
      * 검증된 기초 잔액과 보관된 당일 잔액을 테스트 입력으로 직접 준비합니다.
      * 마감 서비스의 합산·검증 로직은 이 준비 코드에 구현하지 않습니다.
      */

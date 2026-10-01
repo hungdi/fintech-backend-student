@@ -7,7 +7,7 @@ import java.math.BigDecimal;
 public abstract class ReconciliationTestSupport extends InternalReconciliationTestSupport {
     @Override
     protected ReconciliationSampleData createSampleData() {
-        // 3-2 확장의 마감 엔티티·업무일 과제를 완성한 뒤 내부 샘플을 준비하세요.
+        // 2-5-1~2-5-2의 마감 엔티티·업무일 과제를 완성한 뒤 내부 샘플을 준비하세요.
         ReconciliationSampleData sample = super.createSampleData();
         var from = accountRepository.findById(sample.withdrawalAccountId()).orElseThrow();
         var to = accountRepository.findById(sample.depositAccountId()).orElseThrow();

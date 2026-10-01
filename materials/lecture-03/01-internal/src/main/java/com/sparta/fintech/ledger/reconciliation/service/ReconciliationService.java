@@ -81,12 +81,12 @@ public class ReconciliationService {
     }
 
     public ReconciliationRunResult run(LocalDate baseDate) {
-        // TODO [특강 3 / 3-8 일별 마감 보완] READ_COMMITTED 트랜잭션에서 과거 UTC 날짜만 허용하세요.
+        // TODO [특강 3 / 3-8] READ_COMMITTED 트랜잭션에서 과거 UTC 날짜만 허용하세요.
         // 전일 VERIFIED 마감과 대상일 보관 기록을 순서대로 잠그고 모든 대상 계좌의 기록이 있는지 검사하세요.
         // 각 비교 규칙은 대상일 범위만 조회합니다. 실행/결과 저장과 마감 검증 상태 변경을 함께 커밋하세요.
         // 불일치가 없으면 대상일 마감을 검증하고, 불일치가 있으면 해당일 및 이후 날짜의 검증을 취소하세요.
         // 재실행은 새 실행 이력을 남기며 기존 마감 금액은 변경하지 않습니다.
-        throw new UnsupportedOperationException("TODO [특강 3 / 3-8 일별 마감 보완] 일별 대사 결과와 마감 검증 상태를 저장하세요.");
+        throw new UnsupportedOperationException("TODO [특강 3 / 3-8] 일별 대사 결과와 마감 검증 상태를 저장하세요.");
     }
 
     private void reconcileAccountBalanceWithAccountTransactions(
@@ -96,9 +96,9 @@ public class ReconciliationService {
         Map<Long, BigDecimal> openingBalances,
         List<SiReconciliationResult> results
     ) {
-        // TODO [특강 3 / 3-2 일별 마감 보완] 전일 검증 완료 마감 + 대상일 입금 - 출금을 대상일 원장 마감과 비교하세요.
+        // TODO [특강 3 / 3-2] 전일 검증 완료 마감 + 대상일 입금 - 출금을 대상일 원장 마감과 비교하세요.
         // 시작 시각은 포함하고 다음 날 00:00 UTC는 제외하세요. 실행 시점의 현재 잔액을 비교하지 않습니다.
-        throw new UnsupportedOperationException("TODO [특강 3 / 3-2 일별 마감 보완] 전일 마감과 당일 입출금으로 기대 잔액을 계산하세요.");
+        throw new UnsupportedOperationException("TODO [특강 3 / 3-2] 전일 마감과 당일 입출금으로 기대 잔액을 계산하세요.");
     }
 
     private Instant dayStart(LocalDate date) {
@@ -110,13 +110,15 @@ public class ReconciliationService {
     }
 
     private List<DmTransaction> completedTransactions(LocalDate date) {
-        // TODO [특강 3 / 3-3 일별 마감 보완] 완료 시각이 대상일 범위에 속한 거래만 조회하세요.
-        throw new UnsupportedOperationException("TODO [특강 3 / 3-3 일별 마감 보완] 날짜 범위의 완료 거래를 조회하세요.");
+        // TODO [특강 3 / 3-1-2] 완료 시각이 대상일 범위에 속한 거래만 조회하세요.
+        throw new UnsupportedOperationException("TODO [특강 3 / 3-1-2] 날짜 범위의 완료 거래를 조회하세요.");
     }
 
     private List<DmTransaction> lifecycleTransactions(LocalDate date) {
-        // TODO [특강 3 / 3-7-1 일별 마감 보완] 날짜 범위의 완료/미완료 요청/계좌거래/전표 후보를 조회하고 거래 ID로 중복을 제거하세요.
-        throw new UnsupportedOperationException("TODO [특강 3 / 3-7-1 일별 마감 보완] 대상일의 거래 생명주기 검사 후보를 조회하세요.");
+        // TODO [특강 3 / 3-7-1] 정상 완료 거래와 기간 내 미완료 요청/계좌거래/전표 후보에 완료 시각이 null인 완료 거래 후보도 합치고 거래 ID로 중복을 제거하세요.
+        // 완료 시각 null 후보는 requestedAt, 연결 계좌거래 occurredAt, 연결 전표 postedAt의 [startAt, endAt) 조회를 합칩니다.
+        // null을 다른 시각으로 보정하지 마세요. 증거가 대상일 안에 있는 각 날짜에 별도 오류를 남깁니다.
+        throw new UnsupportedOperationException("TODO [특강 3 / 3-7-1] 대상일의 거래 생명주기 검사 후보를 조회하세요.");
     }
 
     private void reconcileTransactionsWithAccountTransactions(
@@ -165,8 +167,19 @@ public class ReconciliationService {
     }
 
     private void reconcileTransactionLifecycle(SsReconciliationRun run, LocalDate date, List<SiReconciliationResult> results) {
-        // TODO [특강 3 / 3-7-1] 완료 시각과 상태, API 거래 출처에 필요한 송금 오더를 확인하세요.
-        throw new UnsupportedOperationException("TODO [특강 3 / 3-7-1] 완료 시각과 상태, API 거래 출처에 필요한 송금 오더를 확인하세요.");
+        // TODO [특강 3 / 3-7-1] 완료 거래의 completedAt이 null이면 COMPLETED_TRANSACTION_MISSING_COMPLETION_TIME의 MISMATCH를 기록하세요.
+        // 같은 실행에서는 거래 ID별 오류를 중복 기록하지 않고 실제 완료 시각을 추정하거나 원본을 변경하지 않습니다.
+        // API 거래와 완료 오더를 양방향으로 검사하며 hasMatchingCompletedTransferOrder 계약을 재사용하세요.
+        // 순방향에서 검사한 오더 ID는 기록해 같은 실행의 역방향 비교 결과가 중복되지 않게 작성하세요.
+        throw new UnsupportedOperationException("TODO [특강 3 / 3-7-1] 완료 시각 누락과 API 오더의 양방향 연결을 검사하세요.");
+    }
+
+    private boolean hasMatchingCompletedTransferOrder(DmTransferOrder order, DmTransaction transaction) {
+        // TODO [특강 3 / 3-7-1] 두 상태가 COMPLETED이고 두 completedAt이 모두 존재하며 Instant.equals로 같은지 검사하세요.
+        // 오더 또는 거래가 없으면 false이며 거래 유형은 TRANSFER여야 합니다.
+        // 기존 거래 ID, TID/GID, 통화, 요청 금액과 전표 연결 검증을 함께 유지합니다.
+        // 거래→오더와 오더→거래 비교 모두 이 계약을 사용하며 같은 날짜라는 조건만으로 일치를 판단하지 않습니다.
+        throw new UnsupportedOperationException("TODO [특강 3 / 3-7-1] 완료 거래와 오더의 식별값·금액·정확한 완료 시각을 대조하세요.");
     }
 
     private boolean hasCompleteAccountItems(DmTransaction transaction, List<DiAccountTransaction> items) {
@@ -186,8 +199,9 @@ public class ReconciliationService {
     }
 
     private boolean hasMatchingJournalAmount(LmJournalEntry journal) {
-        // TODO [특강 3 / 3-4] 요청 금액, 지원 유형의 차대 방향/행 수와 전표 저장 UTC 날짜를 검사하세요.
-        throw new UnsupportedOperationException("TODO [특강 3 / 3-4] 분개 금액과 구조 및 전표 저장일을 검사하세요.");
+        // TODO [특강 3 / 3-4] 전표 상태가 POSTED인지 먼저 검사하고 요청 금액, 지원 유형의 차대 방향/행 수와 전표 저장 UTC 날짜를 검사하세요.
+        // 금액과 날짜가 맞아도 DRAFT 또는 CANCELLED 전표는 정상으로 판정하지 않습니다.
+        throw new UnsupportedOperationException("TODO [특강 3 / 3-4] 전표 POSTED 상태와 분개 금액·구조 및 전표 저장일을 검사하세요.");
     }
 
     private BigDecimal transactionExpectedAccountTransactionAmount(DmTransaction transaction) {

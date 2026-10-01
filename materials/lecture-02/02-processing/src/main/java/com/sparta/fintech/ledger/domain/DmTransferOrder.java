@@ -86,7 +86,7 @@ public class DmTransferOrder extends BaseTimeEntity {
     }
 
     public void complete(Long transactionId, Long journalEntryId, String voucherNo, Instant now) {
-        // TODO [특강 2 / 5-2-2] 거래 PK, 전표 PK와 번호, 완료 상태 및 전달된 Instant를 기록하세요.
+        // TODO [특강 2 / 5-2-2] null 완료 시각을 상태·링크·번호 변경 전에 거절하고 PK, 전표 번호, 상태 및 Instant를 기록하세요.
         throw new UnsupportedOperationException("TODO [특강 2 / 5-2-2] 거래 PK, 전표 PK와 번호, 완료 상태 및 전달된 Instant를 기록하세요.");
     }
 

@@ -88,7 +88,7 @@ public class DmTransaction extends BaseTimeEntity {
     }
 
     public void complete(Instant now) {
-        // TODO [특강 1 / 3-1] 거래 완료 상태와 전달받은 Instant를 함께 기록하세요.
+        // TODO [특강 1 / 3-1] null 완료 시각을 상태나 필드 변경 전에 거절하고 완료 상태와 Instant를 함께 기록하세요.
         throw new UnsupportedOperationException("TODO [특강 1 / 3-1] 거래 완료 상태와 전달받은 Instant를 함께 기록하세요.");
     }
 
