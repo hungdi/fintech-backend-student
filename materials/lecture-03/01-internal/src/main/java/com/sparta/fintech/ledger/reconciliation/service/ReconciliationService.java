@@ -154,15 +154,6 @@ public class ReconciliationService {
         throw new UnsupportedOperationException("TODO [특강 3 / 3-6] 회계원장의 차변 합계와 대변 합계를 비교하세요.");
     }
 
-    private void reconcileCompletedTransactionsMissingLedgerOrJournal(
-        SsReconciliationRun run,
-        LocalDate baseDate,
-        List<SiReconciliationResult> results
-    ) {
-        // TODO [특강 3 / 3-7] 완료 거래의 필수 계좌내역, 전표 상태와 날짜, 거래별 회계원장을 검사하세요.
-        // hasCompleteAccountItems, hasCompletedJournalReference와 hasMatchingAccountingLedgers를 사용합니다.
-        throw new UnsupportedOperationException("TODO [특강 3 / 3-7] 완료 거래에서 전표나 회계원장 전체가 빠진 경우를 찾으세요.");
-    }
 
     private void reconcileTransactionLifecycle(SsReconciliationRun run, LocalDate date, List<SiReconciliationResult> results) {
         // TODO [특강 3 / 3-7-1] 완료 거래의 completedAt이 null이면 COMPLETED_TRANSACTION_MISSING_COMPLETION_TIME의 MISMATCH를 기록하세요.
@@ -197,11 +188,6 @@ public class ReconciliationService {
         throw new UnsupportedOperationException("TODO [특강 3 / 3-4] 거래별 회계원장의 구조와 날짜를 검증하세요.");
     }
 
-    private boolean hasCompletedJournalReference(LmJournalEntry journal) {
-        // TODO [특강 3 / 3-7] 완료 거래의 전표가 POSTED이고 postedAt의 UTC 날짜가 거래 완료일과 같은지 확인하세요.
-        // 이 검사는 완료 거래의 필수 기록을 검사하며 전표 금액 대사를 다시 수행하지 않습니다.
-        throw new UnsupportedOperationException("TODO [특강 3 / 3-7] 완료 거래의 전표 상태와 날짜를 검사하세요.");
-    }
 
     private BigDecimal transactionExpectedAccountTransactionAmount(DmTransaction transaction) {
         // TODO [특강 3 / 3-3] 송금, 입금, 출금 유형에 필요한 계좌거래 금액의 합계를 구하세요.

@@ -108,14 +108,6 @@ class ReconciliationIntegrationExerciseTest extends InternalReconciliationTestSu
         fail("TODO [특강 3 / 3-7-1, 6-3] API 거래와 송금 오더의 정확한 완료 시각을 양방향으로 대조하세요.");
     }
 
-    @Test
-    void matchingAmountsDoNotMakeAnUnpostedJournalNormal() {
-        // TODO [특강 3 / 3-4, 6-3] 정상 샘플의 전표 금액·참조·postedAt은 유지하고 테스트 SQL로 상태만 DRAFT로 바꾸세요.
-        // SUCCESS_TRANSACTION_MISSING_LEDGER_OR_JOURNAL이 MISMATCH여야 합니다. 두 원장의 직접 금액 비교는 NORMAL입니다.
-        // CANCELLED 상태도 별도로 확인하며, POSTED인 정상 자료는 기존 금액·고객 계좌·날짜 조건을 모두 통과해야 합니다.
-        // 잘못된 전표를 조회에서 제외하지 말고 조회한 전표의 상태를 비교 규칙으로 검사하세요.
-        fail("TODO [특강 3 / 3-4, 6-3] 금액이 맞더라도 POSTED가 아닌 전표를 불일치로 기록하세요.");
-    }
 
     @org.junit.jupiter.params.ParameterizedTest
     @org.junit.jupiter.params.provider.ValueSource(strings = {"split-credit", "same-direction", "unequal-items", "swapped-accounts", "same-account", "wrong-date", "wrong-currency", "missing-order"})
