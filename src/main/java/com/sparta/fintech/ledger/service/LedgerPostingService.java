@@ -68,16 +68,6 @@ public class LedgerPostingService {
         throw new UnsupportedOperationException("TODO [특강 1 / 6-1] 거래와 계좌거래, 전표 및 회계원장을 함께 저장하고 완료 상태와 결과를 연결하세요.");
     }
 
-    public LedgerPostingResult postTransfer(LedgerPostingCommand command) {
-        // TODO [특강 2 / 6-3] API 송금의 거래 출처를 구분하며 기존 원장 저장과 동일한 검증을 적용하세요.
-        throw new UnsupportedOperationException("TODO [특강 2 / 6-3] API 송금의 거래 출처를 구분하며 기존 원장 저장과 동일한 검증을 적용하세요.");
-    }
-
-    private LedgerPostingResult post(LedgerPostingCommand command, boolean apiTransfer) {
-        // TODO [특강 1 / 6-1] 거래와 계좌거래, 전표 및 회계원장을 함께 저장하고 완료 상태와 결과를 연결하세요.
-        throw new UnsupportedOperationException("TODO [특강 1 / 6-1] 거래와 계좌거래, 전표 및 회계원장을 함께 저장하고 완료 상태와 결과를 연결하세요.");
-    }
-
     private void validate(LedgerPostingCommand command) {
         // TODO [특강 1 / 4-2] 필수 식별값, 양수 금액과 저장 범위, 계좌거래 및 유형별 분개 구성을 검사하세요.
         throw new UnsupportedOperationException("TODO [특강 1 / 4-2] 필수 식별값, 양수 금액과 저장 범위, 계좌거래 및 유형별 분개 구성을 검사하세요.");

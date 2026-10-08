@@ -180,10 +180,21 @@ public abstract class InternalReconciliationTestSupport {
         postLine(transferJournal, transfer, deposit, from, 1, DebitCreditType.DEBIT, "300000");
         postLine(transferJournal, transfer, deposit, to, 2, DebitCreditType.CREDIT, "300000");
 
+        DmTransferOrder order = new DmTransferOrder(
+            "settlement-key", "request-hash", "T-TRANSFER", "G-TRANSFER", "T-TRANSFER-J", "T-TRANSFER-L",
+            from, to, new BigDecimal("300000"), "KRW", externalInstitutionCode());
+        order.complete(transfer.getTransactionId(), transferJournal.getJournalEntryId(),
+            transferJournal.getVoucherNo(), POSTED_AT);
+        transferOrderRepository.save(order);
+
         return new ReconciliationSampleData(
             from.getAccountId(), to.getAccountId(), transfer.getTransactionId(),
             transferJournal.getJournalEntryId(), transfer.getGid()
         );
+    }
+
+    protected String externalInstitutionCode() {
+        return null;
     }
 
     private void prepareClosingInputs(DmAccount account, BigDecimal closingAmount, boolean capture) {

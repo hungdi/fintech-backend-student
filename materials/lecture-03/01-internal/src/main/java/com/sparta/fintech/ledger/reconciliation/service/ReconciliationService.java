@@ -169,7 +169,7 @@ public class ReconciliationService {
     private void reconcileTransactionLifecycle(SsReconciliationRun run, LocalDate date, List<SiReconciliationResult> results) {
         // TODO [특강 3 / 3-7-1] 완료 거래의 completedAt이 null이면 COMPLETED_TRANSACTION_MISSING_COMPLETION_TIME의 MISMATCH를 기록하세요.
         // 같은 실행에서는 거래 ID별 오류를 중복 기록하지 않고 실제 완료 시각을 추정하거나 원본을 변경하지 않습니다.
-        // API 거래와 완료 오더를 양방향으로 검사하며 hasMatchingCompletedTransferOrder 계약을 재사용하세요.
+        // 모든 TRANSFER 거래는 완료 오더를 요구합니다. 생성 경로 예외 없이 양방향으로 검사하고 hasMatchingCompletedTransferOrder를 재사용하세요.
         // 순방향에서 검사한 오더 ID는 기록해 같은 실행의 역방향 비교 결과가 중복되지 않게 작성하세요.
         throw new UnsupportedOperationException("TODO [특강 3 / 3-7-1] 완료 시각 누락과 API 오더의 양방향 연결을 검사하세요.");
     }
@@ -183,7 +183,11 @@ public class ReconciliationService {
     }
 
     private boolean hasCompleteAccountItems(DmTransaction transaction, List<DiAccountTransaction> items) {
-        // TODO [특강 3 / 3-3] 거래 유형과 API 오더의 계좌에 맞는 계좌거래 쌍을 확인하세요. 발생일은 거래 완료 UTC 날짜와 같아야 합니다.
+        // TODO [특강 3 / 3-3] 생성 경로에 관계없이 거래 유형, 양수 요청 금액, 입출금 건수·방향·금액·계좌를 확인하세요.
+        // 입금은 CREDIT 1건, 출금은 DEBIT 1건이며 각 금액은 요청액과 같아야 합니다.
+        // 송금은 서로 다른 계좌의 DEBIT 1건과 CREDIT 1건, 각 금액이 요청액과 같은 구조여야 합니다.
+        // 송금 오더가 반드시 존재하고 hasMatchingCompletedTransferOrder를 통과하며 출금·입금 계좌가 각각 일치해야 합니다.
+        // 각 계좌 통화는 거래 통화와 같고 발생일은 거래 완료 UTC 날짜와 같아야 합니다. 합계 일치만으로 정상 처리하지 마세요.
         throw new UnsupportedOperationException("TODO [특강 3 / 3-3] 계좌거래의 금액, 방향, 계좌와 발생일을 검사하세요.");
     }
 

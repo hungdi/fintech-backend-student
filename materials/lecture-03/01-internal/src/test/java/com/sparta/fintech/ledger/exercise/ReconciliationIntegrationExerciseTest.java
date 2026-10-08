@@ -95,7 +95,7 @@ class ReconciliationIntegrationExerciseTest extends InternalReconciliationTestSu
 
     @Test
     void apiOrderCompletionTimesMustMatchInBothDirections() {
-        // TODO [특강 3 / 3-7-1, 6-3] TRANSFER_API 완료 거래와 대응 완료 오더가 같은 Instant를 갖는 정상 자료를 준비하세요.
+        // TODO [특강 3 / 3-7-1, 6-3] 송금 완료 거래와 대응 완료 오더가 같은 Instant를 갖는 정상 자료를 준비하세요.
         // 테스트 DB 직접 SQL로 같은 UTC 날짜 안에서 두 완료 시각을 1초 다르게 만드세요.
         // 거래만 null, 오더만 null인 사례도 각각 검사합니다. null 시각은 서로 같다고 간주하지 않습니다.
         // 거래→오더 검사와 완료 오더→거래 역방향 검사 모두 API_TRANSFER_ORDER의 MISMATCH를 찾아야 합니다.
@@ -114,6 +114,17 @@ class ReconciliationIntegrationExerciseTest extends InternalReconciliationTestSu
         // CANCELLED 상태도 별도로 확인하며, POSTED인 정상 자료는 기존 금액·고객 계좌·날짜 조건을 모두 통과해야 합니다.
         // 잘못된 전표를 조회에서 제외하지 말고 조회한 전표의 상태를 비교 규칙으로 검사하세요.
         fail("TODO [특강 3 / 3-4, 6-3] 금액이 맞더라도 POSTED가 아닌 전표를 불일치로 기록하세요.");
+    }
+
+    @org.junit.jupiter.params.ParameterizedTest
+    @org.junit.jupiter.params.provider.ValueSource(strings = {"split-credit", "same-direction", "unequal-items", "swapped-accounts", "same-account", "wrong-date", "wrong-currency", "missing-order"})
+    void transferRequiresExactAccountItemsAndCompletedOrder(String corruption) {
+        // TODO [특강 3 / 3-3, 3-7-1] createSampleData()의 30만원 송금에 각각 독립적으로 오류를 주입하세요.
+        // 출금 30만원·입금 20만원·입금 10만원은 합계가 같아도 입금 2건이므로 MISMATCH입니다.
+        // 출금/입금 모두 DEBIT, 출금 40만원·입금 20만원, 계좌 교환, 동일 계좌도 각각 MISMATCH여야 합니다.
+        // 날짜 또는 통화 변경과 완료 오더 삭제도 검사하세요. 거래별 결과를 TID와 대상 유형으로 선택합니다.
+        // 금액 합계가 같은 사례에서는 differenceAmount가 0이어도 resultStatus는 MISMATCH인지 확인하세요.
+        org.junit.jupiter.api.Assertions.fail("TODO [특강 3 / 3-3, 3-7-1] 송금 상세 구조와 완료 오더를 검증하세요.");
     }
 
 }
