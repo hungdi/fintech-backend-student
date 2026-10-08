@@ -61,6 +61,10 @@ public abstract class InternalReconciliationTestSupport {
     @BeforeEach
     void resetPracticeDatabase() throws Exception {
         practiceClock.set(RECONCILIATION_TIME);
+        clearPracticeDatabase();
+    }
+
+    protected void clearPracticeDatabase() throws Exception {
         TestDatabaseReset.clear(dataSource);
     }
 
@@ -125,6 +129,10 @@ public abstract class InternalReconciliationTestSupport {
      * 마감 서비스의 합산·검증 로직은 이 준비 코드에 구현하지 않습니다.
      */
     protected ReconciliationSampleData createSampleData() {
+        return createSampleData(true);
+    }
+
+    protected ReconciliationSampleData createSampleData(boolean capture) {
         CmCustomer fromCustomer = customerRepository.save(new CmCustomer(
             "CUST-RECON-W", "박개발", "withdraw-recon@example.com", "010-1111-1111"
         ));
@@ -137,8 +145,8 @@ public abstract class InternalReconciliationTestSupport {
         DmAccount to = accountRepository.save(new DmAccount(
             toCustomer, "330-002", "월세 입금 계좌", "KRW", BASE_DATE.atStartOfDay(ZoneOffset.UTC).toInstant()
         ));
-        prepareClosingInputs(from, new BigDecimal("700"));
-        prepareClosingInputs(to, new BigDecimal("300"));
+        prepareClosingInputs(from, new BigDecimal("700000"), capture);
+        prepareClosingInputs(to, new BigDecimal("300000"), capture);
         LcLedgerAccount cash = ledgerAccountRepository.save(new LcLedgerAccount(
             "100101", "현금", DebitCreditType.DEBIT
         ));
@@ -147,30 +155,30 @@ public abstract class InternalReconciliationTestSupport {
         ));
 
         DmTransaction opening = completedTransaction(
-            "T-OPENING", "G-OPENING", TransactionType.DEPOSIT, "1000"
+            "T-OPENING", "G-OPENING", TransactionType.DEPOSIT, "1000000"
         );
         accountTransactionRepository.save(new DiAccountTransaction(
             opening.getTid(), opening.getGid(), null, opening, from,
-            DebitCreditType.CREDIT, new BigDecimal("1000"), "초기 입금", new BigDecimal("1000"), POSTED_AT
+            DebitCreditType.CREDIT, new BigDecimal("1000000"), "초기 입금", new BigDecimal("1000000"), POSTED_AT
         ));
         LmJournalEntry openingJournal = postedJournal(opening, "JV-OPENING");
-        postLine(openingJournal, opening, cash, null, 1, DebitCreditType.DEBIT, "1000");
-        postLine(openingJournal, opening, deposit, from, 2, DebitCreditType.CREDIT, "1000");
+        postLine(openingJournal, opening, cash, null, 1, DebitCreditType.DEBIT, "1000000");
+        postLine(openingJournal, opening, deposit, from, 2, DebitCreditType.CREDIT, "1000000");
 
         DmTransaction transfer = completedTransaction(
-            "T-TRANSFER", "G-TRANSFER", TransactionType.TRANSFER, "300"
+            "T-TRANSFER", "G-TRANSFER", TransactionType.TRANSFER, "300000"
         );
         accountTransactionRepository.save(new DiAccountTransaction(
             transfer.getTid(), transfer.getGid(), null, transfer, from,
-            DebitCreditType.DEBIT, new BigDecimal("300"), "월세 출금", new BigDecimal("700"), POSTED_AT
+            DebitCreditType.DEBIT, new BigDecimal("300000"), "월세 출금", new BigDecimal("700000"), POSTED_AT
         ));
         accountTransactionRepository.save(new DiAccountTransaction(
             transfer.getTid(), transfer.getGid(), null, transfer, to,
-            DebitCreditType.CREDIT, new BigDecimal("300"), "월세 입금", new BigDecimal("300"), POSTED_AT
+            DebitCreditType.CREDIT, new BigDecimal("300000"), "월세 입금", new BigDecimal("300000"), POSTED_AT
         ));
         LmJournalEntry transferJournal = postedJournal(transfer, "JV-TRANSFER");
-        postLine(transferJournal, transfer, deposit, from, 1, DebitCreditType.DEBIT, "300");
-        postLine(transferJournal, transfer, deposit, to, 2, DebitCreditType.CREDIT, "300");
+        postLine(transferJournal, transfer, deposit, from, 1, DebitCreditType.DEBIT, "300000");
+        postLine(transferJournal, transfer, deposit, to, 2, DebitCreditType.CREDIT, "300000");
 
         return new ReconciliationSampleData(
             from.getAccountId(), to.getAccountId(), transfer.getTransactionId(),
@@ -178,14 +186,14 @@ public abstract class InternalReconciliationTestSupport {
         );
     }
 
-    private void prepareClosingInputs(DmAccount account, BigDecimal closingAmount) {
+    private void prepareClosingInputs(DmAccount account, BigDecimal closingAmount, boolean capture) {
         var balance = new DmAccountBalance(account, closingAmount, closingAmount);
-        balance.initializeBusinessDate(BASE_DATE.plusDays(1));
+        balance.initializeBusinessDate(capture ? BASE_DATE.plusDays(1) : BASE_DATE);
         accountBalanceRepository.save(balance);
         // openingBaseline의 VERIFIED 초기화 규칙도 학생 구현 대상입니다.
         dailyClosingRepository.save(SmAccountDailyClosing.openingBaseline(
             account, BASE_DATE.minusDays(1), BigDecimal.ZERO, POSTED_AT));
-        dailyClosingRepository.save(new SmAccountDailyClosing(account, BASE_DATE, closingAmount,
+        if (capture) dailyClosingRepository.save(new SmAccountDailyClosing(account, BASE_DATE, closingAmount,
             BASE_DATE.plusDays(1).atTime(0, 10).toInstant(ZoneOffset.UTC)));
     }
 

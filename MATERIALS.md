@@ -117,10 +117,10 @@ default Optional<DmAccountBalance> findByAccountIdForUpdate(Long accountId) {
 강의 7장의 금액은 다음 호출로 준비합니다. 문자열 인자는 출금 잔액, 입금 잔액, 1회 송금 한도 순서입니다.
 
 ```java
-var sample = createTransferAccounts("1000.00", "100.00", "1000.00");
+var sample = createTransferAccounts("1000000.00", "100000.00", "1000000.00");
 ```
 
-300원 송금 후 출금 잔액은 700원, 입금 잔액은 400원입니다. `sample.fromId()`와 `toId()`는 DB 계좌 ID, `fromNo()`와 `toNo()`는 계좌번호입니다. `TransferTestSupport.Accounts`의 반환 필드를 사용해 송금 요청을 구성하세요. 테스트마다 `createTransferAccounts()`를 한 번 호출합니다.
+300,000원 송금 후 출금 잔액은 700,000원, 입금 잔액은 400,000원입니다. `sample.fromId()`와 `toId()`는 DB 계좌 ID, `fromNo()`와 `toNo()`는 계좌번호입니다. `TransferTestSupport.Accounts`의 반환 필드를 사용해 송금 요청을 구성하세요. 테스트마다 `createTransferAccounts()`를 한 번 호출합니다.
 
 인자 없는 `createTransferAccounts()`도 유지합니다. 기본값은 출금 1,000,000원, 입금 100,000원, 1회 한도 1,000,000원입니다. 이 경우 300,000원 송금 후 700,000원과 400,000원입니다. 두 형태 모두 초기 원장을 만들지 않으므로 3강 정상 대사 샘플로 쓰지 않습니다.
 
@@ -131,7 +131,7 @@ var sample = createTransferAccounts("1000.00", "100.00", "1000.00");
 ```java
 var attempts = ConcurrentRequests.run(5, index -> transferService.transfer(
     new TransferCommand("different-" + index, sample.fromNo(), sample.toNo(),
-        new BigDecimal("300"), "KRW", "동시 송금")));
+        new BigDecimal("300000"), "KRW", "동시 송금")));
 ```
 
 서로 다른 키는 위처럼 인덱스를 붙입니다. 같은 키 재시도는 별도 테스트에서 새 샘플을 만들고 모든 요청에 `"same-key"`와 같은 금액 및 설명을 전달합니다. 성공 건수, 예외 종류, 총 잔액과 저장 행 수는 7-5의 과제로 직접 검증하세요.
@@ -292,7 +292,9 @@ default List<DmTransaction> findCompletedInPeriod(Instant startAt, Instant endAt
 
 ### 3-1-3. 날짜와 마감 기록을 포함한 테스트 샘플 준비하기
 
-3-1의 `ReconciliationIntegrationExerciseTest`는 `InternalReconciliationTestSupport`가 제공하는 주입 필드, 초기화와 `createSampleData()`를 사용합니다. 샘플은 기준일 `2026-09-15`, 원장 처리 시각 UTC 12:00, 실행 Clock `2026-09-16 02:00 UTC`를 사용합니다. 초기 입금 1,000원과 송금 300원, 계좌 `330-001`과 `330-002`, 대상일 마감 700원과 300원을 준비합니다. 최초 기준 잔액과 대상일 실제 마감도 고정 자료로 준비하고 비교 알고리즘이나 송금 Service는 호출하지 않습니다. `SmAccountDailyClosing.openingBaseline()`과 `DmAccountBalance`의 업무 날짜 메서드, JPA 매핑과 Repository를 먼저 작성해야 샘플을 적재할 수 있습니다. 송금 오더와 외부 기관은 만들지 않는 내부 샘플이며 2강의 잔액만 있는 샘플과 구분하세요.
+정답 프로젝트의 3·4강에도 같은 `InternalReconciliationTestSupport`, `ReconciliationTestSupport`, `MutableBusinessClock`을 제공합니다. `createSampleData(false)`는 대상일 마감을 저장하지 않은 상태를 준비하며, 기본 `createSampleData()`는 마감을 포함합니다.
+
+3-1의 `ReconciliationIntegrationExerciseTest`는 `InternalReconciliationTestSupport`가 제공하는 주입 필드, 초기화와 `createSampleData()`를 사용합니다. 샘플은 기준일 `2026-09-15`, 원장 처리 시각 UTC 12:00, 실행 Clock `2026-09-16 02:00 UTC`를 사용합니다. 초기 입금 1,000,000원과 송금 300,000원, 계좌 `330-001`과 `330-002`, 대상일 마감 700,000원과 300,000원을 준비합니다. 최초 기준 잔액과 대상일 실제 마감도 고정 자료로 준비하고 비교 알고리즘이나 송금 Service는 호출하지 않습니다. `SmAccountDailyClosing.openingBaseline()`과 `DmAccountBalance`의 업무 날짜 메서드, JPA 매핑과 Repository를 먼저 작성해야 샘플을 적재할 수 있습니다. 송금 오더와 외부 기관은 만들지 않는 내부 샘플이며 2강의 잔액만 있는 샘플과 구분하세요.
 
 ### 3-2. 일별 마감 원장 금액과 당일 입출금 내역 대조하기
 
@@ -302,7 +304,7 @@ default List<DmTransaction> findCompletedInPeriod(Instant startAt, Instant endAt
 
 3-2에서는 잔액 비교만 연결해 두 계좌 결과를 검사할 수 있습니다. 거래·전표·원장 규칙을 추가하면서 같은 `run()`을 확장하되, 일부 규칙만 작성한 상태를 전체 검증 완료로 표시하지 않습니다. 완성된 `run()`은 모든 내부 검사 후 불일치 0건일 때만 해당일 마감을 `VERIFIED`로 표시하세요. 테스트 개수나 고정 결과 건수 대신 날짜 범위, 계좌별 기대·실제 금액, 상태와 오류 사유를 확인합니다.
 
-고정 마감 샘플의 현재 잔액을 나중에 바꾸어도 이미 저장한 과거 마감 금액은 바뀌지 않습니다. 잔액 불일치 사례는 마감 저장 전에 실제 잔액을 훼손한 별도 자료로 만들고, 거래·전표·회계원장 훼손 사례는 저장된 마감 금액을 보존한 상태에서 비교합니다. 이미 저장한 마감 금액을 999원으로 훼손하는 사례는 테스트 DB에만 `JdbcTemplate` 직접 SQL을 적용하는 오류 주입입니다. 이를 위해 엔티티 setter나 정상 Service의 마감 UPDATE 기능을 추가하거나 불변 매핑을 약화하지 않습니다. `ReconciliationIntegrationExerciseTest`의 일별 마감 과제에서는 날짜 전환, 거래 없는 날, 기초 잔액 누락과 재실행을 직접 구현해 확인하세요. 실패 송금 롤백도 앞 강의 실패 Hook 테스트에 마감 기록과 업무 날짜 검증을 추가합니다. `InternalReconciliationTestSupport.practiceClock`의 타입인 `MutableBusinessClock`은 고정 시각을 바꾸는 테스트 준비 코드입니다. `practiceClock.set(instant)`로 시각을 변경하고 각 테스트 전에는 기본 실행 시각으로 복구합니다. 서비스의 실제 날짜 계산은 공통 UTC Clock을 사용하고 테스트 코드의 시각 전환으로 다음 날 마감과 대사를 확인합니다.
+고정 마감 샘플의 현재 잔액을 나중에 바꾸어도 이미 저장한 과거 마감 금액은 바뀌지 않습니다. 잔액 불일치 사례는 마감 저장 전에 실제 잔액을 훼손한 별도 자료로 만들고, 거래·전표·회계원장 훼손 사례는 저장된 마감 금액을 보존한 상태에서 비교합니다. 이미 저장한 마감 금액을 999,000원으로 훼손하는 사례는 테스트 DB에만 `JdbcTemplate` 직접 SQL을 적용하는 오류 주입입니다. 이를 위해 엔티티 setter나 정상 Service의 마감 UPDATE 기능을 추가하거나 불변 매핑을 약화하지 않습니다. `ReconciliationIntegrationExerciseTest`의 일별 마감 과제에서는 날짜 전환, 거래 없는 날, 기초 잔액 누락과 재실행을 직접 구현해 확인하세요. 실패 송금 롤백도 앞 강의 실패 Hook 테스트에 마감 기록과 업무 날짜 검증을 추가합니다. `InternalReconciliationTestSupport.practiceClock`의 타입인 `MutableBusinessClock`은 고정 시각을 바꾸는 테스트 준비 코드입니다. `practiceClock.set(instant)`로 시각을 변경하고 각 테스트 전에는 기본 실행 시각으로 복구합니다. 서비스의 실제 날짜 계산은 공통 UTC Clock을 사용하고 테스트 코드의 시각 전환으로 다음 날 마감과 대사를 확인합니다.
 
 ### 3-5. 전표 상세와 회계원장 연결을 비교하기
 
@@ -316,8 +318,8 @@ default List<DmTransaction> findCompletedInPeriod(Instant startAt, Instant endAt
 
 | 변경 대상 | 거래와 전표 | 전표와 회계원장 | 회계원장 차대 합계 |
 | --- | --- | --- | --- |
-| 원장 양쪽 금액만 400원 | NORMAL | MISMATCH | NORMAL |
-| 전표 상세와 원장 양쪽 금액을 모두 400원 | MISMATCH | MISMATCH | NORMAL |
+| 원장 양쪽 금액만 400,000원 | NORMAL | MISMATCH | NORMAL |
+| 전표 상세와 원장 양쪽 금액을 모두 400,000원 | MISMATCH | MISMATCH | NORMAL |
 
 고객예수금 원장의 고객 계좌만 다른 정상 계좌로 바꾼 사례도 추가하세요. 단순히 금액이 같다는 이유로 정상 처리해서는 안 됩니다. 비교 결과를 저장하면서 원본 금융 기록을 수정하지 않습니다.
 
@@ -395,7 +397,7 @@ var result = settlementService.calculate(
 
 | 파일 | 입력의 의미 | 기대 결과 |
 | --- | --- | --- |
-| `normal.json` | 내부와 외부 300원 | 차이 없음 |
+| `normal.json` | 내부와 외부 300,000원 | 차이 없음 |
 | `amount-mismatch.json` | 같은 TID의 금액 불일치 | 해당 상세 불일치 |
 | `missing-bank.json` | 내부에만 송금 존재 | 외부 누락 |
 | `external-only.json` | 외부에만 추가 거래 존재 | 내부 누락 |
@@ -509,9 +511,9 @@ FinancialTestData.openingDeposit(accountId, amount, accountBalanceRepository,
     ledgerAccountRepository, ledgerPostingService, dailyClosingService, clock);
 ```
 
-기존 다섯 인자 뒤에 `DailyClosingService`와 `Clock`을 전달합니다. 이 함수는 잔액 행을 잠근 뒤 하나의 처리 시각으로 마감 준비, 잔액 증가와 원장 저장을 호출합니다. 9인자 원장 DTO 생성자와 5인자 AccountPosting을 사용하며 `balanceAfter`는 `getLedgerBalance()`로 전달합니다. 로그인, 송금과 같은 키 재시도를 확인한 뒤 Clock을 다음 UTC 날짜로 진행해 `capture(대상일)`과 `run(대상일)`을 차례로 호출합니다. 대상일 마감과 대사 결과를 조회해 700원·300원 및 `VERIFIED` 상태를 확인하세요. 당시 클라이언트 응답은 네 필드 계약을 계속 사용합니다.
+기존 다섯 인자 뒤에 `DailyClosingService`와 `Clock`을 전달합니다. 이 함수는 잔액 행을 잠근 뒤 하나의 처리 시각으로 마감 준비, 잔액 증가와 원장 저장을 호출합니다. 9인자 원장 DTO 생성자와 5인자 AccountPosting을 사용하며 `balanceAfter`는 `getLedgerBalance()`로 전달합니다. 로그인, 송금과 같은 키 재시도를 확인한 뒤 Clock을 다음 UTC 날짜로 진행해 `capture(대상일)`과 `run(대상일)`을 차례로 호출합니다. 대상일 마감과 대사 결과를 조회해 700,000원·300,000원 및 `VERIFIED` 상태를 확인하세요. 당시 클라이언트 응답은 네 필드 계약을 계속 사용합니다.
 
-고정 TID `T-OPENING`, 현금 코드 `100101`을 새로 저장하므로 반복 테스트 전에 H2 DB를 초기화하세요. 지급보류 사례는 별도 테스트에서 원장 금액 100원과 사용가능잔액 80원으로 시작해 100원을 입금합니다. 결과는 200원과 180원이고 저장할 `balanceAfter`는 200원입니다. 이 사례는 잔액 스냅샷 검증용이며 앞선 100원의 원장까지 준비한 정상 대사 사례와 구분합니다.
+고정 TID `T-OPENING`, 현금 코드 `100101`을 새로 저장하므로 반복 테스트 전에 H2 DB를 초기화하세요. 지급보류 사례는 별도 테스트에서 원장 금액 100,000원과 사용가능잔액 80,000원으로 시작해 100,000원을 입금합니다. 결과는 200,000원과 180,000원이고 저장할 `balanceAfter`는 200,000원입니다. 이 사례는 잔액 스냅샷 검증용이며 앞선 100,000원의 원장까지 준비한 정상 대사 사례와 구분합니다.
 
 ## 강의와 과제 테스트 대응
 
@@ -529,7 +531,7 @@ FinancialTestData.openingDeposit(accountId, amount, accountBalanceRepository,
 | 2강 7-4~7-5 | `TransferIntegrationExerciseTest.retriesAndConcurrentRequestsKeepMoneyAndRequestIdentity()` | 같은 키, 다른 내용, 서로 다른 키의 동시 요청을 각각 검증 |
 | 3강 2-4 | `ReconciliationExerciseTest.equalTotalsDoNotHideMissingStructure()` | DB 없는 결과 객체 검증 |
 | 3강 3-2-2 | `ReconciliationIntegrationExerciseTest.usesVerifiedOpeningAndCapturedClosingForDailyAmounts()` | 고정 전일 기준과 당일 마감 비교, 전체 대사 후 VERIFIED 확인 |
-| 3강 3-2-2 | `ReconciliationIntegrationExerciseTest.includesANonZeroVerifiedOpeningBalance()` | 기초 500원과 당일 입출금을 포함한 기대·실제 마감 1,200원 |
+| 3강 3-2-2 | `ReconciliationIntegrationExerciseTest.includesANonZeroVerifiedOpeningBalance()` | 기초 500,000원과 당일 입출금을 포함한 기대·실제 마감 1,200,000원 |
 | 3강 2-5-2, 5-3 | `ReconciliationIntegrationExerciseTest.closingBatchPreservesThePriorDayBeforeNextDayPosting()` | 다음 날 입금 전 마감 보관, 거래 없는 날짜와 재저장 불변 |
 | 3강 2-5-3, 3-8-1 | `ReconciliationIntegrationExerciseTest.failedNextDayTransferRollsBackCapturedClosingAndBusinessDate()` | 다음 날 실패 송금의 마감 기록·업무 날짜·잔액과 원장 전체 롤백 |
 | 3강 3-3~3-8, 6-3 | `ReconciliationIntegrationExerciseTest.limitsAllComparisonRulesToAHalfOpenUtcDay()` | 당일 00:00 포함, 다음 날 00:00과 전날 제외, 각 비교 규칙 범위 |
@@ -551,7 +553,7 @@ FinancialTestData.openingDeposit(accountId, amount, accountBalanceRepository,
 | 4강 4-2부터 4-4 | `SecurityExerciseTest.masksAccountNumber()` | DB 없는 마스킹 검증 |
 | 4강 7-1~7-3 | `SecurityIntegrationExerciseTest.loginOwnershipRoleAndTokenFailures()` | `SecurityTestSupport`로 로그인, 소유권, 역할, 만료 및 변조 토큰 검증 |
 | 4강 8-2 | `SecurityIntegrationExerciseTest.dailyLimitReplayAndDurableCompletion()` | 누적 한도, 재시도, 동시 요청과 송금 완료 기록 검증 |
-| 4강 8-4 | `OpeningDepositExerciseTest.openingDepositWithHeldFundsRecordsLedgerBalance()` | 원장 금액 100원, 사용가능잔액 80원에서 입금 후 balanceAfter 검증 |
+| 4강 8-4 | `OpeningDepositExerciseTest.openingDepositWithHeldFundsRecordsLedgerBalance()` | 원장 금액 100,000원, 사용가능잔액 80,000원에서 입금 후 balanceAfter 검증 |
 | 4강 8-4 | `OpeningDepositExerciseTest.loginTransferReplayAndReconciliationUseCompleteOpeningLedger()` | 실제 기초 등록, 초기 원장과 로그인, 송금·재시도, 다음 UTC 날짜 마감과 VERIFIED 확인 |
 
 2강의 송금 DB 과제는 `TransferIntegrationExerciseTest`, 4강의 보안 API 과제는 `SecurityIntegrationExerciseTest`에서 작성합니다. 추가한 강의의 과제만 먼저 선택하려면 루트에서 다음 명령을 사용합니다.

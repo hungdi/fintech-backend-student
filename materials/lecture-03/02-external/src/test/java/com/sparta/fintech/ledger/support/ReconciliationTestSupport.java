@@ -7,15 +7,20 @@ import java.math.BigDecimal;
 public abstract class ReconciliationTestSupport extends InternalReconciliationTestSupport {
     @Override
     protected ReconciliationSampleData createSampleData() {
+        return createSampleData(true);
+    }
+
+    @Override
+    protected ReconciliationSampleData createSampleData(boolean capture) {
         // 2-5-1~2-5-2의 마감 엔티티·업무일 과제를 완성한 뒤 내부 샘플을 준비하세요.
-        ReconciliationSampleData sample = super.createSampleData();
+        ReconciliationSampleData sample = super.createSampleData(capture);
         var from = accountRepository.findById(sample.withdrawalAccountId()).orElseThrow();
         var to = accountRepository.findById(sample.depositAccountId()).orElseThrow();
         var transfer = transactionRepository.findById(sample.transferTransactionId()).orElseThrow();
         var journal = journalEntryRepository.findById(sample.transferJournalEntryId()).orElseThrow();
         DmTransferOrder order = new DmTransferOrder(
             "settlement-key", "request-hash", "T-TRANSFER", "G-TRANSFER",
-            "T-TRANSFER-J", "T-TRANSFER-L", from, to, new BigDecimal("300"), "KRW", "OTHER-BANK"
+            "T-TRANSFER-J", "T-TRANSFER-L", from, to, new BigDecimal("300000"), "KRW", "OTHER-BANK"
         );
         order.complete(transfer.getTransactionId(), journal.getJournalEntryId(), journal.getVoucherNo(), POSTED_AT);
         transferOrderRepository.save(order);

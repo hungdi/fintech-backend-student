@@ -120,10 +120,10 @@ public abstract class SecurityTestSupport {
             BigDecimal.ZERO,
             BigDecimal.ZERO
         ));
-        addTransferLimit(ownerCustomer, ownerAccount, LimitPeriod.PER_TRANSACTION, "1000.00");
+        addTransferLimit(ownerCustomer, ownerAccount, LimitPeriod.PER_TRANSACTION, "1000000.00");
         addTransferLimit(ownerCustomer, ownerAccount, LimitPeriod.DAILY, dailyLimit);
-        addTransferLimit(otherCustomer, otherAccount, LimitPeriod.PER_TRANSACTION, "1000.00");
-        addTransferLimit(otherCustomer, otherAccount, LimitPeriod.DAILY, "1000.00");
+        addTransferLimit(otherCustomer, otherAccount, LimitPeriod.PER_TRANSACTION, "1000000.00");
+        addTransferLimit(otherCustomer, otherAccount, LimitPeriod.DAILY, "1000000.00");
         ledgerAccountRepository.save(new LcLedgerAccount("210101", "고객예수금", DebitCreditType.CREDIT));
 
         return new SecurityFixture(

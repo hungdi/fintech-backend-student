@@ -4,7 +4,7 @@
   "externalItems": [
     {
       "targetGid": "G-TRANSFER",
-      "amount": "300.00"
+      "amount": "300000.00"
     }
   ],
   "expectedError": "외부 거래 TID"

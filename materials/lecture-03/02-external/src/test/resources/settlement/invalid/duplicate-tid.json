@@ -5,12 +5,12 @@
     {
       "targetTid": "T-TRANSFER",
       "targetGid": "G-TRANSFER",
-      "amount": "300.00"
+      "amount": "300000.00"
     },
     {
       "targetTid": "T-TRANSFER",
       "targetGid": "G-TRANSFER",
-      "amount": "300.00"
+      "amount": "300000.00"
     }
   ],
   "expectedError": "중복 TID"

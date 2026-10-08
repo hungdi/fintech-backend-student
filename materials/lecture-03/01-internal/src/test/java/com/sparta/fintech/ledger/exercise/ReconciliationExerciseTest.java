@@ -16,7 +16,7 @@ class ReconciliationExerciseTest {
         var run = new SsReconciliationRun(date, "비교 연습");
         var result = new SiReconciliationResult(run, ReconciliationTargetType.TRANSACTION_VS_ACCOUNT_TRANSACTION,
             date, "T-TRANSFER", "G-TRANSFER", null,
-            new BigDecimal("600"), new BigDecimal("600"), false, "상세 구성 확인");
+            new BigDecimal("600000"), new BigDecimal("600000"), false, "상세 구성 확인");
         assertThat(result.getDifferenceAmount()).isEqualByComparingTo("0");
         assertThat(result.getResultStatus()).isEqualTo(ReconciliationResultStatus.MISMATCH);
     }

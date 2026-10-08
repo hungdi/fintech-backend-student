@@ -1,12 +1,12 @@
 {
   "baseDate": "2026-09-15",
   "transactionTid": "T-TRANSFER",
-  "requestedAmount": "300.00",
+  "requestedAmount": "300000.00",
   "cases": [
     {
       "name": "ledger-only",
       "change": {
-        "li_accounting_ledger.amount": "400.00"
+        "li_accounting_ledger.amount": "400000.00"
       },
       "expected": {
         "TRANSACTION_VS_JOURNAL_ENTRY": "NORMAL",
@@ -17,8 +17,8 @@
     {
       "name": "journal-and-ledger",
       "change": {
-        "li_journal_entry_line.amount": "400.00",
-        "li_accounting_ledger.amount": "400.00"
+        "li_journal_entry_line.amount": "400000.00",
+        "li_accounting_ledger.amount": "400000.00"
       },
       "expected": {
         "TRANSACTION_VS_JOURNAL_ENTRY": "MISMATCH",

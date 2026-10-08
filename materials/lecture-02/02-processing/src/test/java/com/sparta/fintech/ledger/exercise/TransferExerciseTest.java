@@ -14,9 +14,9 @@ class TransferExerciseTest {
     void withdrawalPreservesHeldAmount() {
         var customer = new CmCustomer("CUST-17", "박개발", "student@example.com", "010-1111-1111");
         var account = new DmAccount(customer, "110-001", "출금 계좌", "KRW");
-        var balance = new DmAccountBalance(account, new BigDecimal("100"), new BigDecimal("80"));
-        balance.decrease(new BigDecimal("30"));
-        assertThat(balance.getLedgerBalance()).isEqualByComparingTo("70");
-        assertThat(balance.getAvailableBalance()).isEqualByComparingTo("50");
+        var balance = new DmAccountBalance(account, new BigDecimal("100000"), new BigDecimal("80000"));
+        balance.decrease(new BigDecimal("30000"));
+        assertThat(balance.getLedgerBalance()).isEqualByComparingTo("70000");
+        assertThat(balance.getAvailableBalance()).isEqualByComparingTo("50000");
     }
 }
