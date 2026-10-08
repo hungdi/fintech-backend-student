@@ -74,11 +74,12 @@ class ReconciliationIntegrationExerciseTest extends InternalReconciliationTestSu
     }
 
     @Test
-    void ledgerOnlyAndJournalAndLedgerCorruptionHaveDifferentResults() {
+    void accountTransactionsAndAccountingLedgersAreComparedDirectly() {
         // TODO [특강 3 / 3-6, 6-3] InternalReconciliationTestSupport의 정상 샘플에서 매번 새로 시작하세요.
-        // 원장만 400,000원으로 바꾼 경우: 요청 대 전표 NORMAL, 전표 대 원장 MISMATCH, 차대 합계 NORMAL.
-        // 전표 상세도 함께 400,000원으로 바꾼 경우: 요청 대 전표 MISMATCH, 전표 대 원장 MISMATCH, 차대 합계 NORMAL.
-        // 고객 계좌만 다른 정상 계좌로 바꾼 경우도 별도로 검증하세요.
+        // 회계원장 양쪽을 각 40만원으로 바꾸면 기대 60만원, 실제 80만원과 MISMATCH를 기록해야 합니다.
+        // 전표 상세도 같은 금액으로 바꿔도 위 결과는 같습니다. 전표 상세 금액만 바꾸면 직접 대사 결과는 NORMAL입니다.
+        // ACCOUNT_TRANSACTION_VS_ACCOUNTING_LEDGER의 대상은 거래 TID입니다. 잘못된 계좌, 방향, 계정과목과 날짜도 검증하세요.
+        // 송금 출금 30만원과 입금 30만원, 회계원장 차변 30만원과 대변 20만원이면 차액은 -10만원입니다.
         fail("TODO [특강 3 / 3-6, 6-3] 변경한 테이블과 비교 규칙을 구분해 검사하세요.");
     }
     @Test
@@ -110,7 +111,7 @@ class ReconciliationIntegrationExerciseTest extends InternalReconciliationTestSu
     @Test
     void matchingAmountsDoNotMakeAnUnpostedJournalNormal() {
         // TODO [특강 3 / 3-4, 6-3] 정상 샘플의 전표 금액·참조·postedAt은 유지하고 테스트 SQL로 상태만 DRAFT로 바꾸세요.
-        // TRANSACTION_VS_JOURNAL_ENTRY는 differenceAmount=0이어도 MISMATCH여야 합니다.
+        // SUCCESS_TRANSACTION_MISSING_LEDGER_OR_JOURNAL이 MISMATCH여야 합니다. 두 원장의 직접 금액 비교는 NORMAL입니다.
         // CANCELLED 상태도 별도로 확인하며, POSTED인 정상 자료는 기존 금액·고객 계좌·날짜 조건을 모두 통과해야 합니다.
         // 잘못된 전표를 조회에서 제외하지 말고 조회한 전표의 상태를 비교 규칙으로 검사하세요.
         fail("TODO [특강 3 / 3-4, 6-3] 금액이 맞더라도 POSTED가 아닌 전표를 불일치로 기록하세요.");
@@ -125,6 +126,17 @@ class ReconciliationIntegrationExerciseTest extends InternalReconciliationTestSu
         // 날짜 또는 통화 변경과 완료 오더 삭제도 검사하세요. 거래별 결과를 TID와 대상 유형으로 선택합니다.
         // 금액 합계가 같은 사례에서는 differenceAmount가 0이어도 resultStatus는 MISMATCH인지 확인하세요.
         org.junit.jupiter.api.Assertions.fail("TODO [특강 3 / 3-3, 3-7-1] 송금 상세 구조와 완료 오더를 검증하세요.");
+    }
+
+    @org.junit.jupiter.params.ParameterizedTest
+    @org.junit.jupiter.params.provider.ValueSource(strings = {"offsetting-amounts", "same-direction", "wrong-account-code", "split-credit", "wrong-account", "wrong-date"})
+    void equalLedgerTotalsDoNotHideIncorrectIndividualRecords(String corruption) {
+        // TODO [특강 3 / 3-4, 6-3] 정상 30만원 송금의 회계원장에 각 오류를 독립적으로 주입하세요.
+        // 차변 40만원과 대변 20만원, 같은 방향 두 건, 잘못된 계정과목, 대변 20만원과 10만원 분할을 검사합니다.
+        // 계좌 또는 날짜만 바뀐 사례도 포함합니다. 합계 60만원과 차액 0원이어도 MISMATCH여야 합니다.
+        // 새 대사 유형 ACCOUNT_TRANSACTION_VS_ACCOUNTING_LEDGER와 거래 TID로 결과를 선택하세요.
+        // 대사 전후 금융 원본의 값을 조회해 비교 서비스가 기록을 수정하지 않았는지 확인하세요.
+        fail("TODO [특강 3 / 3-4, 6-3] 계좌원장과 회계원장의 개별 내역을 직접 비교하세요.");
     }
 
 }

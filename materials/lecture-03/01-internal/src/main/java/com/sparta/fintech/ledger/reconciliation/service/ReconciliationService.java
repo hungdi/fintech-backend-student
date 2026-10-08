@@ -7,7 +7,6 @@ import com.sparta.fintech.ledger.domain.DailyClosingStatus;
 import com.sparta.fintech.ledger.domain.DmTransaction;
 import com.sparta.fintech.ledger.domain.DmTransferOrder;
 import com.sparta.fintech.ledger.domain.LiAccountingLedger;
-import com.sparta.fintech.ledger.domain.LiJournalEntryLine;
 import com.sparta.fintech.ledger.domain.LmJournalEntry;
 import com.sparta.fintech.ledger.domain.ReconciliationResultStatus;
 import com.sparta.fintech.ledger.domain.ReconciliationTargetType;
@@ -21,7 +20,6 @@ import com.sparta.fintech.ledger.repository.DmAccountBalanceRepository;
 import com.sparta.fintech.ledger.repository.DmTransactionRepository;
 import com.sparta.fintech.ledger.repository.DmTransferOrderRepository;
 import com.sparta.fintech.ledger.repository.LiAccountingLedgerRepository;
-import com.sparta.fintech.ledger.repository.LiJournalEntryLineRepository;
 import com.sparta.fintech.ledger.repository.LmJournalEntryRepository;
 import com.sparta.fintech.ledger.repository.SiReconciliationResultRepository;
 import com.sparta.fintech.ledger.repository.SsReconciliationRunRepository;
@@ -51,7 +49,6 @@ public class ReconciliationService {
     private final DmTransactionRepository transactionRepository;
     private final DmTransferOrderRepository transferOrderRepository;
     private final LmJournalEntryRepository journalEntryRepository;
-    private final LiJournalEntryLineRepository journalEntryLineRepository;
     private final LiAccountingLedgerRepository accountingLedgerRepository;
 
     public ReconciliationService(
@@ -62,7 +59,6 @@ public class ReconciliationService {
         DmTransactionRepository transactionRepository,
         DmTransferOrderRepository transferOrderRepository,
         LmJournalEntryRepository journalEntryRepository,
-        LiJournalEntryLineRepository journalEntryLineRepository,
         LiAccountingLedgerRepository accountingLedgerRepository,
         Clock clock,
         SmAccountDailyClosingRepository dailyClosingRepository
@@ -76,14 +72,14 @@ public class ReconciliationService {
         this.transactionRepository = transactionRepository;
         this.transferOrderRepository = transferOrderRepository;
         this.journalEntryRepository = journalEntryRepository;
-        this.journalEntryLineRepository = journalEntryLineRepository;
         this.accountingLedgerRepository = accountingLedgerRepository;
     }
 
     public ReconciliationRunResult run(LocalDate baseDate) {
         // TODO [특강 3 / 3-8] READ_COMMITTED 트랜잭션에서 과거 UTC 날짜만 허용하세요.
         // 전일 VERIFIED 마감과 대상일 보관 기록을 순서대로 잠그고 모든 대상 계좌의 기록이 있는지 검사하세요.
-        // 각 비교 규칙은 대상일 범위만 조회합니다. 실행/결과 저장과 마감 검증 상태 변경을 함께 커밋하세요.
+        // 기준일 완료 거래를 조회하고 연결된 회계원장은 거래 ID로 조회해 잘못된 날짜도 검사합니다. 실행/결과 저장과 마감 검증 상태 변경을 함께 커밋하세요.
+        // 거래별 계좌거래 비교 다음에 reconcileAccountTransactionsWithAccountingLedgers를 호출하세요.
         // 불일치가 없으면 대상일 마감을 검증하고, 불일치가 있으면 해당일 및 이후 날짜의 검증을 취소하세요.
         // 재실행은 새 실행 이력을 남기며 기존 마감 금액은 변경하지 않습니다.
         throw new UnsupportedOperationException("TODO [특강 3 / 3-8] 일별 대사 결과와 마감 검증 상태를 저장하세요.");
@@ -130,22 +126,23 @@ public class ReconciliationService {
         throw new UnsupportedOperationException("TODO [특강 3 / 3-3] 요청 금액과 유형에 맞는 계좌거래의 금액, 방향 및 실제 계좌를 비교하세요.");
     }
 
-    private void reconcileTransactionsWithJournalEntries(
-        SsReconciliationRun run,
-        LocalDate baseDate,
-        List<SiReconciliationResult> results
+    private void reconcileAccountTransactionsWithAccountingLedgers(
+        SsReconciliationRun run, LocalDate baseDate, List<SiReconciliationResult> results
     ) {
-        // TODO [특강 3 / 3-4] 거래에 연결된 전표의 존재와 상태, 각 분개 금액을 요청 금액과 비교하세요.
-        throw new UnsupportedOperationException("TODO [특강 3 / 3-4] 거래에 연결된 전표의 존재와 상태, 각 분개 금액을 요청 금액과 비교하세요.");
+        // TODO [특강 3 / 3-4] 완료 거래 ID로 계좌원장과 회계원장을 조회해 합계와 개별 내역을 비교하세요.
+        // 회계원장은 날짜로 제한하지 않아 잘못된 transactionDate도 검사합니다.
+        // ACCOUNT_TRANSACTION_VS_ACCOUNTING_LEDGER 결과의 대상 TID/GID는 거래에서 가져옵니다.
+        // 현금 입출금의 기대 합계에는 계좌 내역에 대응하는 현금 분개 금액도 포함하세요.
+        throw new UnsupportedOperationException("TODO [특강 3 / 3-4] 계좌원장과 회계원장을 거래별로 직접 비교하세요.");
     }
 
-    private void reconcileJournalEntriesWithAccountingLedgers(
-        SsReconciliationRun run,
-        LocalDate baseDate,
-        List<SiReconciliationResult> results
-    ) {
-        // TODO [특강 3 / 3-5] 전표 상세와 회계원장의 행 수, 참조, 금액, 방향 및 고객 계좌를 비교하세요.
-        throw new UnsupportedOperationException("TODO [특강 3 / 3-5] 전표 상세와 회계원장의 행 수, 참조, 금액, 방향 및 고객 계좌를 비교하세요.");
+    private BigDecimal expectedAccountingLedgerAmount(DmTransaction transaction, List<DiAccountTransaction> items) {
+        // TODO [특강 3 / 3-4] 송금은 입출금 합계, 현금 입출금은 계좌 내역과 현금 대응분의 합계를 구하세요.
+        throw new UnsupportedOperationException("TODO [특강 3 / 3-4] 회계원장 기대 합계를 구하세요.");
+    }
+
+    private BigDecimal sumAccountingLedgers(List<LiAccountingLedger> ledgers) {
+        return ledgers.stream().map(LiAccountingLedger::getAmount).reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
     private void reconcileAccountingLedgerDebitsAndCredits(
@@ -162,7 +159,8 @@ public class ReconciliationService {
         LocalDate baseDate,
         List<SiReconciliationResult> results
     ) {
-        // TODO [특강 3 / 3-7] 완료 거래에서 전표나 회계원장 전체가 빠진 경우를 찾으세요.
+        // TODO [특강 3 / 3-7] 완료 거래의 필수 계좌내역, 전표 상태와 날짜, 거래별 회계원장을 검사하세요.
+        // hasCompleteAccountItems, hasCompletedJournalReference와 hasMatchingAccountingLedgers를 사용합니다.
         throw new UnsupportedOperationException("TODO [특강 3 / 3-7] 완료 거래에서 전표나 회계원장 전체가 빠진 경우를 찾으세요.");
     }
 
@@ -191,21 +189,18 @@ public class ReconciliationService {
         throw new UnsupportedOperationException("TODO [특강 3 / 3-3] 계좌거래의 금액, 방향, 계좌와 발생일을 검사하세요.");
     }
 
-    private boolean hasMatchingLedgerLines(LmJournalEntry journal, List<LiJournalEntryLine> lines,
-                                          List<LiAccountingLedger> ledgers) {
-        // TODO [특강 3 / 3-5] 요청 금액, 전표 상세와 원장 참조, 고객 계좌와 transactionDate를 대조하세요.
-        throw new UnsupportedOperationException("TODO [특강 3 / 3-5] 분개 금액과 고객 계좌 및 거래일을 대조하세요. 6-3에서는 추가 오류 사례를 검증합니다.");
+    private boolean hasMatchingAccountingLedgers(DmTransaction transaction, List<DiAccountTransaction> items,
+                                                 List<LiAccountingLedger> ledgers) {
+        // TODO [특강 3 / 3-4] 빈 목록, 거래 연결, 완료 UTC 날짜와 통화를 확인하세요.
+        // LedgerPostingRules.matches로 거래 유형, 요청액, 두 원장의 개별 금액, 방향, 계좌와 계정과목을 검사하세요.
+        // 합계가 같아도 내역이 다르면 false입니다. 전표 상세의 금액을 비교 기준으로 사용하지 않습니다.
+        throw new UnsupportedOperationException("TODO [특강 3 / 3-4] 거래별 회계원장의 구조와 날짜를 검증하세요.");
     }
 
-    private BigDecimal journalDebitAmount(LmJournalEntry journal) {
-        // TODO [특강 3 / 3-4] 해당 전표의 차변 상세 금액 합계를 구하세요.
-        throw new UnsupportedOperationException("TODO [특강 3 / 3-4] 해당 전표의 차변 상세 금액 합계를 구하세요.");
-    }
-
-    private boolean hasMatchingJournalAmount(LmJournalEntry journal) {
-        // TODO [특강 3 / 3-4] 전표 상태가 POSTED인지 먼저 검사하고 요청 금액, 지원 유형의 차대 방향/행 수와 전표 저장 UTC 날짜를 검사하세요.
-        // 금액과 날짜가 맞아도 DRAFT 또는 CANCELLED 전표는 정상으로 판정하지 않습니다.
-        throw new UnsupportedOperationException("TODO [특강 3 / 3-4] 전표 POSTED 상태와 분개 금액·구조 및 전표 저장일을 검사하세요.");
+    private boolean hasCompletedJournalReference(LmJournalEntry journal) {
+        // TODO [특강 3 / 3-7] 완료 거래의 전표가 POSTED이고 postedAt의 UTC 날짜가 거래 완료일과 같은지 확인하세요.
+        // 이 검사는 완료 거래의 필수 기록을 검사하며 전표 금액 대사를 다시 수행하지 않습니다.
+        throw new UnsupportedOperationException("TODO [특강 3 / 3-7] 완료 거래의 전표 상태와 날짜를 검사하세요.");
     }
 
     private BigDecimal transactionExpectedAccountTransactionAmount(DmTransaction transaction) {
@@ -225,18 +220,6 @@ public class ReconciliationService {
         return items.stream()
             .filter(item -> item.getDebitCreditType() == type)
             .map(DiAccountTransaction::getAmount)
-            .reduce(BigDecimal.ZERO, BigDecimal::add);
-    }
-
-    private BigDecimal sumLines(List<LiJournalEntryLine> lines) {
-        return lines.stream()
-            .map(LiJournalEntryLine::getAmount)
-            .reduce(BigDecimal.ZERO, BigDecimal::add);
-    }
-
-    private BigDecimal sumLedgers(List<LiAccountingLedger> ledgers) {
-        return ledgers.stream()
-            .map(LiAccountingLedger::getAmount)
             .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 

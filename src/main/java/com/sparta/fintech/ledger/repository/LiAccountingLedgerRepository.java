@@ -6,5 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface LiAccountingLedgerRepository extends JpaRepository<LiAccountingLedger, Long> {
 
+    List<LiAccountingLedger> findByTransactionTransactionId(Long transactionId);
+
     List<LiAccountingLedger> findByGid(String gid);
 }
