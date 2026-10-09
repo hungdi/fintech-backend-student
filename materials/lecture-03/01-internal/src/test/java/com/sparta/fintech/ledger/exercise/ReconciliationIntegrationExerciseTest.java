@@ -83,18 +83,6 @@ class ReconciliationIntegrationExerciseTest extends InternalReconciliationTestSu
         fail("TODO [특강 3 / 3-6, 6-3] 변경한 테이블과 비교 규칙을 구분해 검사하세요.");
     }
     @Test
-    void completedTransactionsWithoutCompletionTimeRemainLifecycleCandidates() {
-        // TODO [특강 3 / 3-7-1, 6-3] 정상 완료 거래를 저장한 뒤 테스트 DB 직접 SQL로 completed_at만 null로 훼손하세요.
-        // requestedAt만 대상일인 경우, 요청은 전날이지만 계좌거래 occurredAt이 대상일인 경우,
-        // 요청·계좌거래는 범위 밖이지만 전표 postedAt이 대상일인 경우를 각각 새 DB에서 검사하세요.
-        // COMPLETED_TRANSACTION_MISSING_COMPLETION_TIME의 MISMATCH이며 전체 실행은 불일치를 포함해야 합니다.
-        // 세 시각 근거가 겹치면 같은 run에서 해당 거래 오류는 한 번만 남아야 합니다.
-        // 근거가 서로 다른 날짜에 있으면 각 날짜별 새 DB와 선행 마감을 준비해 오류 후보를 확인하세요. 전체 기간 조회로 대체하지 마세요.
-        // 정상 완료 시각의 반열린 UTC 범위 조회는 유지하고, 원본 시각을 요청·원장 시각으로 자동 보정하지 않습니다.
-        fail("TODO [특강 3 / 3-7-1, 6-3] 완료 시각이 사라진 거래의 후보 조회와 중복 없는 오류 기록을 확인하세요.");
-    }
-
-    @Test
     void apiOrderCompletionTimesMustMatchInBothDirections() {
         // TODO [특강 3 / 3-7-1, 6-3] 송금 완료 거래와 대응 완료 오더가 같은 Instant를 갖는 정상 자료를 준비하세요.
         // 테스트 DB 직접 SQL로 같은 UTC 날짜 안에서 두 완료 시각을 1초 다르게 만드세요.

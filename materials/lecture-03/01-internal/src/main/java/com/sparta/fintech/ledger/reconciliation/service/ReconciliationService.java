@@ -111,9 +111,7 @@ public class ReconciliationService {
     }
 
     private List<DmTransaction> lifecycleTransactions(LocalDate date) {
-        // TODO [특강 3 / 3-7-1] 정상 완료 거래와 기간 내 미완료 요청/계좌거래/전표 후보에 완료 시각이 null인 완료 거래 후보도 합치고 거래 ID로 중복을 제거하세요.
-        // 완료 시각 null 후보는 requestedAt, 연결 계좌거래 occurredAt, 연결 전표 postedAt의 [startAt, endAt) 조회를 합칩니다.
-        // null을 다른 시각으로 보정하지 마세요. 증거가 대상일 안에 있는 각 날짜에 별도 오류를 남깁니다.
+        // TODO [특강 3 / 3-7-1] 정상 완료 거래와 기간 내 미완료 요청/계좌거래/전표 후보를 합치고 거래 ID로 중복을 제거하세요.
         throw new UnsupportedOperationException("TODO [특강 3 / 3-7-1] 대상일의 거래 생명주기 검사 후보를 조회하세요.");
     }
 
@@ -156,11 +154,10 @@ public class ReconciliationService {
 
 
     private void reconcileTransactionLifecycle(SsReconciliationRun run, LocalDate date, List<SiReconciliationResult> results) {
-        // TODO [특강 3 / 3-7-1] 완료 거래의 completedAt이 null이면 COMPLETED_TRANSACTION_MISSING_COMPLETION_TIME의 MISMATCH를 기록하세요.
-        // 같은 실행에서는 거래 ID별 오류를 중복 기록하지 않고 실제 완료 시각을 추정하거나 원본을 변경하지 않습니다.
+        // TODO [특강 3 / 3-7-1] 미완료·실패 거래에 계좌내역, 전표 또는 회계원장이 남아 있으면 INCOMPLETE_TRANSACTION_HAS_POSTINGS를 기록하세요.
         // 모든 TRANSFER 거래는 완료 오더를 요구합니다. 생성 경로 예외 없이 양방향으로 검사하고 hasMatchingCompletedTransferOrder를 재사용하세요.
         // 순방향에서 검사한 오더 ID는 기록해 같은 실행의 역방향 비교 결과가 중복되지 않게 작성하세요.
-        throw new UnsupportedOperationException("TODO [특강 3 / 3-7-1] 완료 시각 누락과 API 오더의 양방향 연결을 검사하세요.");
+        throw new UnsupportedOperationException("TODO [특강 3 / 3-7-1] 미완료 거래의 원장 잔존과 API 오더의 양방향 연결을 검사하세요.");
     }
 
     private boolean hasMatchingCompletedTransferOrder(DmTransferOrder order, DmTransaction transaction) {
