@@ -9,11 +9,27 @@ import static org.junit.jupiter.api.Assertions.fail;
 @Tag("exercise")
 class ReconciliationIntegrationExerciseTest extends InternalReconciliationTestSupport {
     @Test
+    void detectsSplitCreditAccountTransactions() {
+        // TODO [특강 3 / 3-3] 정상 30만원 송금의 입금 내역을 20만원으로 변경하고 같은 거래·계좌에 입금 10만원을 추가하세요.
+        // 계좌 잔액 대사는 NORMAL, 거래별 대사는 합계 60만원·차액 0원이어도 내역이 3건이므로 MISMATCH여야 합니다.
+        // 실행이 정상 종료되면 불일치가 있어도 ReconciliationRunStatus.COMPLETED인지 확인하세요.
+        fail("TODO [특강 3 / 3-3] 분할 입금으로 상세 건수가 달라진 거래를 검출하세요.");
+    }
+
+    @Test
+    void detectsMissingAccountingLedgers() {
+        // TODO [특강 3 / 3-4] createSampleData()의 송금 거래 ID로 연결된 회계원장을 모두 삭제하고 대사하세요.
+        // ACCOUNT_TRANSACTION_VS_ACCOUNTING_LEDGER의 MISMATCH 1건, 대상 TID T-TRANSFER를 확인하세요.
+        // 기대 600000원, 실제 0원, 차액 -600000원이며 새 대사 메서드를 추가하지 않습니다.
+        fail("TODO [특강 3 / 3-4] 기존 직접 대사로 회계원장 전체 누락을 검출하세요.");
+    }
+
+    @Test
     void usesVerifiedOpeningAndCapturedClosingForDailyAmounts() {
         // TODO [특강 3 / 3-2-2] 마감 엔티티·업무일 과제를 완성한 뒤 createSampleData를 호출하세요.
         // 전일 VERIFIED 기초 0/0 + 당일 입금 1,000,000원·송금 300,000원으로 기대 잔액은 700,000/300,000원입니다.
         // 현재 잔액 대신 BASE_DATE의 CAPTURED 마감과 비교하고 두 잔액 결과가 NORMAL인지 확인하세요.
-        // 전체 검사 과제를 완성한 뒤에는 불일치 0건, 당일 마감 VERIFIED와 검증 run 참조를 확인하세요.
+        // 전체 검사 과제를 완성한 뒤에는 세 유형별 2건씩 totalCount=6, mismatchCount=0, 당일 마감 VERIFIED와 검증 run 참조를 확인하세요.
         fail("TODO [특강 3 / 3-2-2] 전일 검증 마감과 당일 마감으로 일별 잔액을 비교하세요.");
     }
 
@@ -36,11 +52,11 @@ class ReconciliationIntegrationExerciseTest extends InternalReconciliationTestSu
 
     @Test
     void limitsAllComparisonRulesToAHalfOpenUtcDay() {
-        // TODO [특강 3 / 3-3~3-8, 6-3] 대상일 00:00은 포함하고 다음 날 00:00은 제외하도록 자료를 구성하세요.
+        // TODO [특강 3 / 3-2~3-5, 6-3] 대상일 00:00은 포함하고 다음 날 00:00은 제외하도록 자료를 구성하세요.
         // 직전 날짜의 마지막 시각도 제외합니다. 거래·계좌거래·전표에는 선택한 동일 시각을 전달하세요.
         // 전일 기초에는 이전 날짜 거래가 이미 반영되어 있어야 합니다. 다른 날짜의 전표 누락을 당일 오류로 세지 마세요.
         // 순차적으로 각 검사 메서드를 완성하고, 규칙별 계좌·거래 결과와 전체 불일치 0건을 확인하세요.
-        fail("TODO [특강 3 / 3-3~3-8, 6-3] UTC 날짜 경계와 각 검사 규칙의 대상 범위를 확인하세요.");
+        fail("TODO [특강 3 / 3-2~3-5, 6-3] UTC 날짜 경계와 각 검사 규칙의 대상 범위를 확인하세요.");
     }
 
     @Test
@@ -54,12 +70,12 @@ class ReconciliationIntegrationExerciseTest extends InternalReconciliationTestSu
 
     @Test
     void mismatchedClosingCannotServeAsTheNextDayOpening() {
-        // TODO [특강 3 / 3-3~3-8, 6-3] JdbcTemplate의 직접 SQL로 테스트 DB의 입금 계좌 당일 마감만 999,000원으로 훼손하세요.
+        // TODO [특강 3 / 3-2~3-5, 6-3] JdbcTemplate의 직접 SQL로 테스트 DB의 입금 계좌 당일 마감만 999,000원으로 훼손하세요.
         // 이 호출은 오류 주입용입니다. 정상 Service나 setter의 금액 변경을 허용하거나 마감의 불변 제약을 제거하지 마세요.
         // 기대 300,000원, 실제 999,000원, 차액 699,000원과 MISMATCH를 기록하되 해당 마감은 CAPTURED여야 합니다.
         // 다음 날짜의 마감을 준비해도 검증되지 않은 전일 마감으로 대사를 진행할 수 없어야 합니다.
         // 이미 성공한 날의 원장을 훼손하고 재대사하면 그 날 이후 VERIFIED 상태도 해제되는지 확인하세요.
-        fail("TODO [특강 3 / 3-3~3-8, 6-3] 불일치 마감과 이후 검증 기준의 상태를 확인하세요.");
+        fail("TODO [특강 3 / 3-2~3-5, 6-3] 불일치 마감과 이후 검증 기준의 상태를 확인하세요.");
     }
 
     @Test
@@ -75,37 +91,24 @@ class ReconciliationIntegrationExerciseTest extends InternalReconciliationTestSu
 
     @Test
     void accountTransactionsAndAccountingLedgersAreComparedDirectly() {
-        // TODO [특강 3 / 3-6, 6-3] InternalReconciliationTestSupport의 정상 샘플에서 매번 새로 시작하세요.
+        // TODO [특강 3 / 3-4, 6-3] InternalReconciliationTestSupport의 정상 샘플에서 매번 새로 시작하세요.
         // 회계원장 양쪽을 각 40만원으로 바꾸면 기대 60만원, 실제 80만원과 MISMATCH를 기록해야 합니다.
         // 전표 상세도 같은 금액으로 바꿔도 위 결과는 같습니다. 전표 상세 금액만 바꾸면 직접 대사 결과는 NORMAL입니다.
         // ACCOUNT_TRANSACTION_VS_ACCOUNTING_LEDGER의 대상은 거래 TID입니다. 잘못된 계좌, 방향, 계정과목과 날짜도 검증하세요.
         // 송금 출금 30만원과 입금 30만원, 회계원장 차변 30만원과 대변 20만원이면 차액은 -10만원입니다.
-        fail("TODO [특강 3 / 3-6, 6-3] 변경한 테이블과 비교 규칙을 구분해 검사하세요.");
-    }
-    @Test
-    void apiOrderCompletionTimesMustMatchInBothDirections() {
-        // TODO [특강 3 / 3-7-1, 6-3] 송금 완료 거래와 대응 완료 오더가 같은 Instant를 갖는 정상 자료를 준비하세요.
-        // 테스트 DB 직접 SQL로 같은 UTC 날짜 안에서 두 완료 시각을 1초 다르게 만드세요.
-        // 거래만 null, 오더만 null인 사례도 각각 검사합니다. null 시각은 서로 같다고 간주하지 않습니다.
-        // 거래→오더 검사와 완료 오더→거래 역방향 검사 모두 API_TRANSFER_ORDER의 MISMATCH를 찾아야 합니다.
-        // 오더만 다음 UTC 날짜로 바꾼 사례는 각 날짜별 새 DB·검증된 전일/당일 마감과 종료일 이후 Clock으로 검사하세요.
-        // 앞 날짜의 실패가 다음 날짜 대사의 선행 조건을 깨뜨리지 않도록 두 방향의 사례를 분리합니다.
-        // 정상적으로 양방향 후보에 포함된 같은 오더는 한 run에서 결과를 중복 추가하지 않아야 합니다.
-        // 날짜 필터에서 null 행이 빠진다는 이유로 정상 또는 비교 대상 없음으로 처리하지 않습니다.
-        // 유효한 same-Instant 사례는 NORMAL이며 재실행으로 금융 원본을 보정하지 않습니다.
-        fail("TODO [특강 3 / 3-7-1, 6-3] API 거래와 송금 오더의 정확한 완료 시각을 양방향으로 대조하세요.");
+        fail("TODO [특강 3 / 3-4, 6-3] 변경한 테이블과 비교 규칙을 구분해 검사하세요.");
     }
 
 
     @org.junit.jupiter.params.ParameterizedTest
     @org.junit.jupiter.params.provider.ValueSource(strings = {"split-credit", "same-direction", "unequal-items", "swapped-accounts", "same-account", "wrong-date", "wrong-currency", "missing-order"})
-    void transferRequiresExactAccountItemsAndCompletedOrder(String corruption) {
-        // TODO [특강 3 / 3-3, 3-7-1] createSampleData()의 30만원 송금에 각각 독립적으로 오류를 주입하세요.
+    void transferRequiresExactAccountItemsAndOrderAccounts(String corruption) {
+        // TODO [특강 3 / 3-3, 3-3] createSampleData()의 30만원 송금에 각각 독립적으로 오류를 주입하세요.
         // 출금 30만원·입금 20만원·입금 10만원은 합계가 같아도 입금 2건이므로 MISMATCH입니다.
         // 출금/입금 모두 DEBIT, 출금 40만원·입금 20만원, 계좌 교환, 동일 계좌도 각각 MISMATCH여야 합니다.
-        // 날짜 또는 통화 변경과 완료 오더 삭제도 검사하세요. 거래별 결과를 TID와 대상 유형으로 선택합니다.
+        // 날짜 또는 통화 변경과 송금 오더 삭제도 검사하세요. 거래별 결과를 TID와 대상 유형으로 선택합니다.
         // 금액 합계가 같은 사례에서는 differenceAmount가 0이어도 resultStatus는 MISMATCH인지 확인하세요.
-        org.junit.jupiter.api.Assertions.fail("TODO [특강 3 / 3-3, 3-7-1] 송금 상세 구조와 완료 오더를 검증하세요.");
+        org.junit.jupiter.api.Assertions.fail("TODO [특강 3 / 3-3, 3-3] 송금 상세 구조와 오더의 출금·입금 계좌를 검증하세요.");
     }
 
     @org.junit.jupiter.params.ParameterizedTest

@@ -7,7 +7,6 @@ import com.sparta.fintech.ledger.domain.DailyClosingStatus;
 import com.sparta.fintech.ledger.domain.DmTransaction;
 import com.sparta.fintech.ledger.domain.DmTransferOrder;
 import com.sparta.fintech.ledger.domain.LiAccountingLedger;
-import com.sparta.fintech.ledger.domain.LmJournalEntry;
 import com.sparta.fintech.ledger.domain.ReconciliationResultStatus;
 import com.sparta.fintech.ledger.domain.ReconciliationTargetType;
 import com.sparta.fintech.ledger.domain.SiReconciliationResult;
@@ -20,7 +19,6 @@ import com.sparta.fintech.ledger.repository.DmAccountBalanceRepository;
 import com.sparta.fintech.ledger.repository.DmTransactionRepository;
 import com.sparta.fintech.ledger.repository.DmTransferOrderRepository;
 import com.sparta.fintech.ledger.repository.LiAccountingLedgerRepository;
-import com.sparta.fintech.ledger.repository.LmJournalEntryRepository;
 import com.sparta.fintech.ledger.repository.SiReconciliationResultRepository;
 import com.sparta.fintech.ledger.repository.SsReconciliationRunRepository;
 import com.sparta.fintech.ledger.repository.SmAccountDailyClosingRepository;
@@ -37,7 +35,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.annotation.Isolation;
 
 @Service
-/** TODO [특강 3 / 3-8] 대상일의 대사 결과와 마감 검증 상태를 같은 트랜잭션에서 저장하세요. */
+/** TODO [특강 3 / 3-5] 대상일의 대사 결과와 마감 검증 상태를 같은 트랜잭션에서 저장하세요. */
 public class ReconciliationService {
 
     private final Clock clock;
@@ -48,7 +46,6 @@ public class ReconciliationService {
     private final DiAccountTransactionRepository accountTransactionRepository;
     private final DmTransactionRepository transactionRepository;
     private final DmTransferOrderRepository transferOrderRepository;
-    private final LmJournalEntryRepository journalEntryRepository;
     private final LiAccountingLedgerRepository accountingLedgerRepository;
 
     public ReconciliationService(
@@ -58,7 +55,6 @@ public class ReconciliationService {
         DiAccountTransactionRepository accountTransactionRepository,
         DmTransactionRepository transactionRepository,
         DmTransferOrderRepository transferOrderRepository,
-        LmJournalEntryRepository journalEntryRepository,
         LiAccountingLedgerRepository accountingLedgerRepository,
         Clock clock,
         SmAccountDailyClosingRepository dailyClosingRepository
@@ -71,18 +67,20 @@ public class ReconciliationService {
         this.accountTransactionRepository = accountTransactionRepository;
         this.transactionRepository = transactionRepository;
         this.transferOrderRepository = transferOrderRepository;
-        this.journalEntryRepository = journalEntryRepository;
         this.accountingLedgerRepository = accountingLedgerRepository;
     }
 
     public ReconciliationRunResult run(LocalDate baseDate) {
-        // TODO [특강 3 / 3-8] READ_COMMITTED 트랜잭션에서 과거 UTC 날짜만 허용하세요.
+        // TODO [특강 3 / 3-5] READ_COMMITTED 트랜잭션에서 과거 UTC 날짜만 허용하세요.
         // 전일 VERIFIED 마감과 대상일 보관 기록을 순서대로 잠그고 모든 대상 계좌의 기록이 있는지 검사하세요.
         // 기준일 완료 거래를 조회하고 연결된 회계원장은 거래 ID로 조회해 잘못된 날짜도 검사합니다. 실행/결과 저장과 마감 검증 상태 변경을 함께 커밋하세요.
-        // 거래별 계좌거래 비교 다음에 reconcileAccountTransactionsWithAccountingLedgers를 호출하세요.
+        // reconcileAccountBalanceWithAccountTransactions, reconcileTransactionsWithAccountTransactions,
+        // reconcileAccountTransactionsWithAccountingLedgers의 세 가지 대사만 호출하세요.
+        // 실행이 정상 종료되면 불일치 유무와 관계없이 run.complete로 COMPLETED를 기록하세요.
+        // 정상 샘플은 유형별 2건씩 총 6건, 불일치 0건입니다.
         // 불일치가 없으면 대상일 마감을 검증하고, 불일치가 있으면 해당일 및 이후 날짜의 검증을 취소하세요.
         // 재실행은 새 실행 이력을 남기며 기존 마감 금액은 변경하지 않습니다.
-        throw new UnsupportedOperationException("TODO [특강 3 / 3-8] 일별 대사 결과와 마감 검증 상태를 저장하세요.");
+        throw new UnsupportedOperationException("TODO [특강 3 / 3-5] 일별 대사 결과와 마감 검증 상태를 저장하세요.");
     }
 
     private void reconcileAccountBalanceWithAccountTransactions(
@@ -108,11 +106,6 @@ public class ReconciliationService {
     private List<DmTransaction> completedTransactions(LocalDate date) {
         // TODO [특강 3 / 3-1-2] 완료 시각이 대상일 범위에 속한 거래만 조회하세요.
         throw new UnsupportedOperationException("TODO [특강 3 / 3-1-2] 날짜 범위의 완료 거래를 조회하세요.");
-    }
-
-    private List<DmTransaction> lifecycleTransactions(LocalDate date) {
-        // TODO [특강 3 / 3-7-1] 정상 완료 거래와 기간 내 미완료 요청/계좌거래/전표 후보를 합치고 거래 ID로 중복을 제거하세요.
-        throw new UnsupportedOperationException("TODO [특강 3 / 3-7-1] 대상일의 거래 생명주기 검사 후보를 조회하세요.");
     }
 
     private void reconcileTransactionsWithAccountTransactions(
@@ -143,36 +136,11 @@ public class ReconciliationService {
         return ledgers.stream().map(LiAccountingLedger::getAmount).reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
-    private void reconcileAccountingLedgerDebitsAndCredits(
-        SsReconciliationRun run,
-        LocalDate baseDate,
-        List<SiReconciliationResult> results
-    ) {
-        // TODO [특강 3 / 3-6] 회계원장의 차변 합계와 대변 합계를 비교하세요.
-        throw new UnsupportedOperationException("TODO [특강 3 / 3-6] 회계원장의 차변 합계와 대변 합계를 비교하세요.");
-    }
-
-
-    private void reconcileTransactionLifecycle(SsReconciliationRun run, LocalDate date, List<SiReconciliationResult> results) {
-        // TODO [특강 3 / 3-7-1] 미완료·실패 거래에 계좌내역, 전표 또는 회계원장이 남아 있으면 INCOMPLETE_TRANSACTION_HAS_POSTINGS를 기록하세요.
-        // 모든 TRANSFER 거래는 완료 오더를 요구합니다. 생성 경로 예외 없이 양방향으로 검사하고 hasMatchingCompletedTransferOrder를 재사용하세요.
-        // 순방향에서 검사한 오더 ID는 기록해 같은 실행의 역방향 비교 결과가 중복되지 않게 작성하세요.
-        throw new UnsupportedOperationException("TODO [특강 3 / 3-7-1] 미완료 거래의 원장 잔존과 API 오더의 양방향 연결을 검사하세요.");
-    }
-
-    private boolean hasMatchingCompletedTransferOrder(DmTransferOrder order, DmTransaction transaction) {
-        // TODO [특강 3 / 3-7-1] 두 상태가 COMPLETED이고 두 completedAt이 모두 존재하며 Instant.equals로 같은지 검사하세요.
-        // 오더 또는 거래가 없으면 false이며 거래 유형은 TRANSFER여야 합니다.
-        // 기존 거래 ID, TID/GID, 통화, 요청 금액과 전표 연결 검증을 함께 유지합니다.
-        // 거래→오더와 오더→거래 비교 모두 이 계약을 사용하며 같은 날짜라는 조건만으로 일치를 판단하지 않습니다.
-        throw new UnsupportedOperationException("TODO [특강 3 / 3-7-1] 완료 거래와 오더의 식별값·금액·정확한 완료 시각을 대조하세요.");
-    }
-
     private boolean hasCompleteAccountItems(DmTransaction transaction, List<DiAccountTransaction> items) {
         // TODO [특강 3 / 3-3] 생성 경로에 관계없이 거래 유형, 양수 요청 금액, 입출금 건수·방향·금액·계좌를 확인하세요.
         // 입금은 CREDIT 1건, 출금은 DEBIT 1건이며 각 금액은 요청액과 같아야 합니다.
         // 송금은 서로 다른 계좌의 DEBIT 1건과 CREDIT 1건, 각 금액이 요청액과 같은 구조여야 합니다.
-        // 송금 오더가 반드시 존재하고 hasMatchingCompletedTransferOrder를 통과하며 출금·입금 계좌가 각각 일치해야 합니다.
+        // 송금 오더가 존재하고 출금·입금 계좌가 각각 일치해야 합니다. 오더의 상태나 완료 시각은 대사하지 않습니다.
         // 각 계좌 통화는 거래 통화와 같고 발생일은 거래 완료 UTC 날짜와 같아야 합니다. 합계 일치만으로 정상 처리하지 마세요.
         throw new UnsupportedOperationException("TODO [특강 3 / 3-3] 계좌거래의 금액, 방향, 계좌와 발생일을 검사하세요.");
     }
@@ -184,7 +152,6 @@ public class ReconciliationService {
         // 합계가 같아도 내역이 다르면 false입니다. 전표 상세의 금액을 비교 기준으로 사용하지 않습니다.
         throw new UnsupportedOperationException("TODO [특강 3 / 3-4] 거래별 회계원장의 구조와 날짜를 검증하세요.");
     }
-
 
     private BigDecimal transactionExpectedAccountTransactionAmount(DmTransaction transaction) {
         // TODO [특강 3 / 3-3] 송금, 입금, 출금 유형에 필요한 계좌거래 금액의 합계를 구하세요.
@@ -203,13 +170,6 @@ public class ReconciliationService {
         return items.stream()
             .filter(item -> item.getDebitCreditType() == type)
             .map(DiAccountTransaction::getAmount)
-            .reduce(BigDecimal.ZERO, BigDecimal::add);
-    }
-
-    private BigDecimal sumLedgers(List<LiAccountingLedger> ledgers, DebitCreditType type) {
-        return ledgers.stream()
-            .filter(ledger -> ledger.getDebitCreditType() == type)
-            .map(LiAccountingLedger::getAmount)
             .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 

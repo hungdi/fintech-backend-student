@@ -9,9 +9,9 @@
         "li_accounting_ledger.amount": "400000.00"
       },
       "expected": {
-        "TRANSACTION_VS_JOURNAL_ENTRY": "NORMAL",
-        "JOURNAL_ENTRY_VS_ACCOUNTING_LEDGER": "MISMATCH",
-        "ACCOUNTING_LEDGER_DEBIT_VS_CREDIT": "NORMAL"
+        "ACCOUNT_BALANCE_VS_ACCOUNT_TRANSACTION": "NORMAL",
+        "TRANSACTION_VS_ACCOUNT_TRANSACTION": "NORMAL",
+        "ACCOUNT_TRANSACTION_VS_ACCOUNTING_LEDGER": "MISMATCH"
       }
     },
     {
@@ -21,9 +21,20 @@
         "li_accounting_ledger.amount": "400000.00"
       },
       "expected": {
-        "TRANSACTION_VS_JOURNAL_ENTRY": "MISMATCH",
-        "JOURNAL_ENTRY_VS_ACCOUNTING_LEDGER": "MISMATCH",
-        "ACCOUNTING_LEDGER_DEBIT_VS_CREDIT": "NORMAL"
+        "ACCOUNT_BALANCE_VS_ACCOUNT_TRANSACTION": "NORMAL",
+        "TRANSACTION_VS_ACCOUNT_TRANSACTION": "NORMAL",
+        "ACCOUNT_TRANSACTION_VS_ACCOUNTING_LEDGER": "MISMATCH"
+      }
+    },
+    {
+      "name": "journal-only",
+      "change": {
+        "li_journal_entry_line.amount": "400000.00"
+      },
+      "expected": {
+        "ACCOUNT_BALANCE_VS_ACCOUNT_TRANSACTION": "NORMAL",
+        "TRANSACTION_VS_ACCOUNT_TRANSACTION": "NORMAL",
+        "ACCOUNT_TRANSACTION_VS_ACCOUNTING_LEDGER": "NORMAL"
       }
     }
   ]
