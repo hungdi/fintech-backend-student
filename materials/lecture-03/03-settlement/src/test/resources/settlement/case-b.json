@@ -1,0 +1,39 @@
+{
+  "baseDate": "2026-09-15",
+  "externalInstitutionCode": "OTHER-BANK",
+  "currencyCode": "KRW",
+  "sampleObligations": [
+    {
+      "targetTid": "T-TRANSFER",
+      "targetGid": "G-TRANSFER",
+      "paymentDirection": "PAYABLE",
+      "amount": "100000"
+    },
+    {
+      "targetTid": "T-RECEIVABLE",
+      "targetGid": "G-RECEIVABLE",
+      "paymentDirection": "RECEIVABLE",
+      "amount": "300000"
+    }
+  ],
+  "externalItems": [
+    {
+      "targetTid": "T-TRANSFER",
+      "targetGid": "G-TRANSFER",
+      "paymentDirection": "PAYABLE",
+      "amount": "100000"
+    },
+    {
+      "targetTid": "T-RECEIVABLE",
+      "targetGid": "G-RECEIVABLE",
+      "paymentDirection": "RECEIVABLE",
+      "amount": "300000"
+    }
+  ],
+  "expected": {
+    "payableAmount": "100000",
+    "receivableAmount": "300000",
+    "netSettlementAmount": "-200000",
+    "mismatchCount": 0
+  }
+}

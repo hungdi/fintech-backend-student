@@ -5,7 +5,7 @@
     {
       "targetTid": "T-TRANSFER",
       "targetGid": "G-TRANSFER",
-      "amount": "200000.00"
+      "amount": "300000.00"
     },
     {
       "targetTid": "T-EXTERNAL-ONLY",
@@ -15,10 +15,9 @@
   ],
   "expected": {
     "internalTotalAmount": "300000.00",
-    "externalTotalAmount": "300000.00",
-    "settlementAmount": "0.00",
+    "externalTotalAmount": "400000.00",
     "detailCount": 2,
-    "mismatchCount": 2,
+    "mismatchCount": 1,
     "details": [
       {
         "targetTid": "T-EXTERNAL-ONLY",
@@ -33,11 +32,12 @@
         "targetTid": "T-TRANSFER",
         "targetGid": "G-TRANSFER",
         "internalAmount": "300000.00",
-        "externalAmount": "200000.00",
-        "differenceAmount": "-100000.00",
-        "matched": false,
-        "reason": "우리 시스템 금액과 외부기관 금액이 다릅니다."
+        "externalAmount": "300000.00",
+        "differenceAmount": "0.00",
+        "matched": true,
+        "reason": "외부 대사 대상 거래가 일치합니다."
       }
-    ]
+    ],
+    "differenceAmount": "100000.00"
   }
 }

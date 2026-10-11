@@ -14,14 +14,15 @@
 | 3강 2-2. 대사 실행과 상세 결과 선언 준비 | `lecture-03/01-internal` | 대사 결과와 일별 마감 필드 및 호출 계약, 고정 샘플 | 이 단계에서는 대사 엔티티와 결과 계산, 마감 처리는 2-5에 구현 | 아래 기존 파일 선언 추가와 1~2강 원장 구현 |
 | 3강 2-5-1~2-5-3. 일별 마감 구현 | 2-2에서 추가한 마감 엔티티·Repository·Service와 기존 송금 파일 | 필드, 생성자, getter 및 메서드 계약 | 마감 매핑·검증 상태, 기초 등록과 날짜 전환, 송금 전 마감 준비 | 금액 및 잔액 검증과 계좌 Lock |
 | 3강 3-1~3-2. 샘플 준비와 일별 잔액 비교 | 기존 `01-internal`의 테스트 지원 및 비교 Service | 고정 시각과 금융·마감 자료 | 날짜 범위 조회, 일별 잔액 비교와 실행 저장 | 2-5 마감 구현 완료 |
-| 3강 4장 시작. 외부 대사 자료 준비하기 | `lecture-03/02-external` | JSON 13개와 파일 읽기 코드, 비교용 오더 샘플 | 범위 조회, 누락과 금액 비교, 입력 오류 처리 | 기관 코드와 Repository 추가 |
-| 3강 5장. 대사 예약 실행 | `lecture-03/03-scheduling` | 두 스케줄러의 주입과 호출 테스트 예제, 비활성 설정 | 마감과 대사 cron, UTC 전날 계산, Service 호출 | 일별 마감과 내부 대사 Service |
+| 3강 4장 시작. 외부 대사 자료 준비하기 | `lecture-03/02-external` | JSON 13개와 파일 읽기 코드, 비교용 오더 샘플, 정산 표본 선언 | 외부 대사 매핑, 범위 조회, 누락과 금액·방향 비교, 입력 오류 처리 | 기관 코드와 Repository 추가 |
+| 3강 외부 대사 뒤. 순정산 계산 | `lecture-03/03-settlement` | 지급·수취 방향을 가진 A/B/C/D 표본, 반환 DTO, 테스트 틀 | 정산 표본 매핑·검증, 지급액·수취액·순액 집계, 대사 연결·재계산·확정 | 외부 대사 구현 완료 |
+| 3강 5장. 대사 예약 실행 | `lecture-03/04-scheduling` | 두 스케줄러의 주입과 호출 테스트 예제, 비활성 설정 | 마감과 대사 cron, UTC 전날 계산, Service 호출 | 일별 마감과 내부 대사 Service |
 | 4강 0장. 실습 준비 | `lecture-04/dependencies.gradle`, `lecture-04/01-security` | 설정 바인딩, DTO, 주입 및 테스트 환경 | 로그인, JWT 검증, 역할과 소유권, 마스킹, 감사 기록 | 3강까지 구현, 보안 의존성 추가 |
 | 4강 8-4. 초기 입금부터 송금과 대사까지 확인하기 | `lecture-04/02-integration` | 초기 입금 함수와 테스트 틀 | 기초 잔액 등록, 입금, 로그인, 송금, 마감과 대사의 통합 검증 | 앞 강의의 잔액 변경과 시각 인자 원장 Service와 일별 마감 |
 
 표의 `domain`과 `service`는 `src/main/java/com/sparta/fintech/ledger/` 아래 경로입니다. `lecture-02` 등의 경로는 `materials/` 아래를 뜻합니다. 각 새 파일의 전체 상대 경로는 문서 끝의 파일 목록에서 확인합니다.
 
-표의 시점에 자료를 추가한 뒤 각 절에서 필요한 메서드를 구현합니다. 내부 대사 샘플은 2-5의 선행 구현을 마친 뒤 3-1-3에서 준비하고 3-2부터 실제 비교합니다. 외부 대사 샘플과 JSON은 4-6, 보안 샘플은 4강 7-1에서 사용합니다.
+표의 시점에 자료를 추가한 뒤 각 절에서 필요한 메서드를 구현합니다. 내부 대사 샘플은 2-5의 선행 구현을 마친 뒤 3-1-3에서 준비하고 3-2부터 실제 비교합니다. 외부 대사 샘플과 JSON은 4-6, 순정산 표본은 외부 대사 뒤의 정산 실습, 보안 샘플은 4강 7-1에서 사용합니다.
 
 생성자 주입, 단순 필드 보관과 DTO 변환은 제공합니다. `@Transactional`, 비관적 `@Lock`, 역할용 `@PreAuthorize`와 업무 검증은 해당 절에서 직접 적용합니다. `TransferPolicy.NONE`은 2강에서 추가 보안 정책을 아직 연결하지 않은 호출 계약입니다. 4강의 고객 요청에는 보안 정책을 연결해야 합니다.
 
@@ -38,8 +39,9 @@
 | 3강 2-2 | `lecture-03/01-internal/src`와 아래 기존 파일 선언 확장 | 결과 객체 계산 과제 | 지금은 선언을 유지하고 2-5에서 마감 매핑과 Repository를 완성 |
 | 3강 2-5-1~2-5-3 | 추가한 자료와 기존 잔액·원장·송금 파일 | 메서드 계약과 상태 단위 과제 | 마감 매핑과 상태 변경, 기준 등록, 날짜 전환과 트랜잭션 |
 | 3강 3-1~3-2 | 기존 자료를 계속 사용 | 고정 시각과 샘플 입력 | 2-5 완료 후 샘플 적재, 기간 조회와 잔액 비교 |
-| 3강 4장 시작 | 아래 오더 수정 후 `lecture-03/02-external/src` | `SettlementMaterialsSmokeTest`의 JSON 읽기 | 기관과 UTC 날짜 조회, 외부 대사와 정산 엔티티 |
-| 3강 5장 | `lecture-03/03-scheduling/src` | `SchedulerExerciseTest`의 고정 Clock 호출 검사 | 두 예약의 활성화와 cron 설정, 마감 저장과 일별 내부 대사 |
+| 3강 4장 시작 | 아래 오더 수정 후 `lecture-03/02-external/src` | `ExternalReconciliationMaterialsSmokeTest`의 JSON 읽기 | 기관과 UTC 날짜 조회, 외부 대사 엔티티와 미리 제공한 정산 엔티티 매핑 |
+| 3강 외부 대사 뒤 | `lecture-03/03-settlement/src` | `SettlementMaterialsSmokeTest`의 A/B/C/D 표본·DTO 확인 | 앞 단계의 매핑 완료, 표본 생성자 검증·집계·대사 연결 |
+| 3강 5장 | `lecture-03/04-scheduling/src` | `SchedulerExerciseTest`의 고정 Clock 호출 검사 | 두 예약의 활성화와 cron 설정, 마감 저장과 일별 내부 대사 |
 | 4강 0장 | 보안 의존성 추가 후 `lecture-04/01-security/src` | `SecurityPreparationSmokeTest`는 선언 연결만 확인, 마스킹 단위테스트 | 보안 Bean과 Properties 값 검증, 사용자 매핑과 아래 변경 |
 | 4강 8-4 | `lecture-04/02-integration/src` | DTO 준비 검사는 유지 | 초기 입금과 로그인, 송금 및 대사 구현 |
 
@@ -292,9 +294,9 @@ default List<DmTransaction> findCompletedInPeriod(Instant startAt, Instant endAt
 
 ### 3-1-3. 날짜와 마감 기록을 포함한 테스트 샘플 준비하기
 
-정답 프로젝트의 3·4강에도 같은 `InternalReconciliationTestSupport`, `ReconciliationTestSupport`, `MutableBusinessClock`을 제공합니다. `createSampleData(false)`는 대상일 마감을 저장하지 않은 상태를 준비하며, 기본 `createSampleData()`는 마감을 포함합니다.
+정답 프로젝트의 3·4강에도 같은 내부 샘플 및 고정 Clock 준비 계약을 제공합니다. 수강생 자료에서는 기존 오더 비교를 `ExternalReconciliationTestSupport`, 정산 표본을 `SettlementTestSupport`로 구분합니다. `createSampleData(false)`는 대상일 마감을 저장하지 않은 상태를 준비하며, 기본 `createSampleData()`는 마감을 포함합니다.
 
-3-1의 `ReconciliationIntegrationExerciseTest`는 `InternalReconciliationTestSupport`가 제공하는 주입 필드, 초기화와 `createSampleData()`를 사용합니다. 샘플은 기준일 `2026-09-15`, 원장 처리 시각 UTC 12:00, 실행 Clock `2026-09-16 02:00 UTC`를 사용합니다. 초기 입금 1,000,000원과 송금 300,000원, 계좌 `330-001`과 `330-002`, 대상일 마감 700,000원과 300,000원을 준비합니다. 최초 기준 잔액과 대상일 실제 마감도 고정 자료로 준비하고 비교 알고리즘이나 송금 Service는 호출하지 않습니다. `SmAccountDailyClosing.openingBaseline()`과 `DmAccountBalance`의 업무 날짜 메서드, JPA 매핑과 Repository를 먼저 작성해야 샘플을 적재할 수 있습니다. 송금 오더와 외부 기관은 만들지 않는 내부 샘플이며 2강의 잔액만 있는 샘플과 구분하세요.
+3-1의 `ReconciliationIntegrationExerciseTest`는 `InternalReconciliationTestSupport`가 제공하는 주입 필드, 초기화와 `createSampleData()`를 사용합니다. 샘플은 기준일 `2026-09-15`, 원장 처리 시각 UTC 12:00, 실행 Clock `2026-09-16 02:00 UTC`를 사용합니다. 초기 입금 1,000,000원과 송금 300,000원, 계좌 `330-001`과 `330-002`, 대상일 마감 700,000원과 300,000원을 준비합니다. 최초 기준 잔액과 대상일 실제 마감도 고정 자료로 준비하고 비교 알고리즘이나 송금 Service는 호출하지 않습니다. `SmAccountDailyClosing.openingBaseline()`과 `DmAccountBalance`의 업무 날짜 메서드, JPA 매핑과 Repository를 먼저 작성해야 샘플을 적재할 수 있습니다. 내부 샘플은 null 기관의 완료 오더도 원장 연결에 맞게 생성하며 2강의 잔액만 있는 샘플과 구분하세요.
 
 ### 3-2. 일별 마감 원장 금액과 당일 입출금 내역 대조하기
 
@@ -366,34 +368,59 @@ transfer:
 `DmTransferOrderRepository`에 아래 조회 계약을 추가합니다. 구현 시 default 본문을 없애고 JPQL과 파라미터 선언을 작성하세요. 조건은 완료 상태, UTC 날짜의 `[startAt, endAt)` 범위, 기관과 통화입니다.
 
 ```java
-default List<DmTransferOrder> findSettlementTargets(java.time.Instant startAt, java.time.Instant endAt,
+default List<DmTransferOrder> findExternalReconciliationTargets(java.time.Instant startAt, java.time.Instant endAt,
     String institution, String currency) {
     throw new UnsupportedOperationException("TODO [특강 3 / 4-5] 외부 대사 대상 조회를 작성하세요.");
 }
 ```
 
-`ReconciliationTestSupport`는 같은 초기 입금과 송금에 외부 비교용 오더를 함께 준비합니다. 기관은 `OTHER-BANK`, 통화는 `KRW`, 완료 시각은 기준일 UTC 12:00입니다. 실제 은행 통신은 하지 않습니다. 내부 대사는 대상일의 거래·원장과 저장한 마감 잔액을 비교하고, 외부 대사는 기관과 통화 및 UTC 하루 범위를 한정합니다.
+`ExternalReconciliationTestSupport`는 같은 초기 입금과 송금에 외부 비교용 오더를 함께 준비합니다. 기관은 `OTHER-BANK`, 통화는 `KRW`, 완료 시각은 기준일 UTC 12:00입니다. 여기의 기관은 외부 보고 비교 범위를 표시합니다. 동일 은행 내 송금의 완료를 외부기관 지급 완료로 바꾸지 않으며, 기관 코드만으로 지급·수취 방향을 판단하지 않습니다. 내부 대사는 대상일의 거래·원장과 저장한 마감 잔액을 비교하고, 외부 대사는 기관과 통화 및 UTC 하루 범위를 한정합니다.
 
-`SettlementService.indexExternalItems()`는 4-5의 `calculate()` 연결 전에 구현합니다. TID나 금액이 없거나 TID가 중복되면 결과를 저장하기 전에 `IllegalArgumentException`을 발생시키세요. 금액이 음수이거나 저장 범위를 넘는 경우도 같은 예외로 처리합니다. 4-6-3은 이 검증의 오류 사례를 검사하는 절입니다. JSON 읽기 코드에 이 업무 검증을 옮기지 않습니다.
+`ExternalReconciliationService.indexExternalItems()`는 4-5의 `reconcile()` 연결 전에 구현합니다. TID나 금액이 없거나 TID가 중복되면 결과를 저장하기 전에 `IllegalArgumentException`을 발생시키세요. 금액이 음수이거나 저장 범위를 넘는 경우도 같은 예외로 처리합니다. 4-6-3은 이 검증의 오류 사례를 검사하는 절입니다. JSON 읽기 코드에 이 업무 검증을 옮기지 않습니다.
 
-4-6의 `SettlementExerciseTest`는 외부 대사용 `ReconciliationTestSupport`를 상속합니다. 이 클래스의 `createSampleData()`는 `OTHER-BANK` 기관의 완료된 `T-TRANSFER` 오더까지 준비합니다. 앞의 내부 대사 테스트는 기존 `InternalReconciliationTestSupport`를 계속 사용합니다. 한 테스트에서 두 샘플을 함께 적재하지 않습니다.
+4-6의 `ExternalReconciliationExerciseTest`는 외부 대사용 `ExternalReconciliationTestSupport`를 상속합니다. 이 클래스의 `createSampleData()`는 `OTHER-BANK` 기관의 완료된 `T-TRANSFER` 오더까지 준비합니다. 앞의 내부 대사 테스트는 기존 `InternalReconciliationTestSupport`를 계속 사용합니다. 한 테스트에서 두 샘플을 함께 적재하지 않습니다.
+
+### 4-2. 외부 대사 차액에 음수를 허용하는 금액 검증 추가하기
+
+외부 금액이 내부보다 작으면 `differenceAmount`가 음수입니다. `SmExternalReconciliation`과 상세 생성자를 구현하기 전에 기존 `StoredMoney`에 아래 계약을 추가하고 본문을 작성하세요. `exact()`의 null·반올림 없는 표현 범위 검증을 재사용하고 부호 제한을 추가하지 않습니다. 기존 `positive()`와 `nonNegative()`의 거래·잔액 검증은 유지합니다. 뒤의 정산-6에서도 같은 계약으로 순수취 금액을 검증합니다.
+
+```java
+public static BigDecimal signed(BigDecimal amount, String name) {
+    throw new UnsupportedOperationException("TODO [특강 3 / 4-2] 대사 차액과 순정산액의 음수를 허용하며 저장 범위를 검사하세요.");
+}
+```
+
+### 4장 엔티티 선언과 기존 외부 대사 코드 전환
+
+새 외부 대사는 `SmExternalReconciliation`과 `SiExternalReconciliationDetail`에 저장합니다. 기존 내부 대사의 `SsReconciliationRun`, `SiReconciliationResult`는 그대로 사용합니다. 접두어의 첫 글자 `S`는 정산·대사, 두 번째 `M`은 대표, `I`는 항목입니다. 기존 내부 실행 이름은 이번 변경에서 유지합니다.
+
+| 엔티티 / 테이블 | 작성할 JPA 구조와 주요 필드 |
+| --- | --- |
+| `SmExternalReconciliation` / `sm_external_reconciliation` | IDENTITY PK, 필수 기준일·기관30자·통화3자, `source`40자 Enum, `targetFingerprint`64자, `internalTotalAmount`·`externalTotalAmount`·`differenceAmount` 필수 `DECIMAL(19,2)`, `resultStatus`20자 Enum, 날짜·기관·통화 인덱스 |
+| `SiExternalReconciliationDetail` / `si_external_reconciliation_detail` | IDENTITY PK, 필수 LAZY ManyToOne `external_reconciliation_id`(생성 후 변경 금지), TID/GID64자 인덱스, 필수 금액3개 `DECIMAL(19,2)`·`matched`, 사유255자, 내부/외부 지급 방향20자 nullable Enum |
+| `SiSettlementSampleObligation` / `si_settlement_sample_obligation` | IDENTITY PK, 필수 기준일·기관30자·통화3자·TID/GID64자·방향20자 Enum·금액 `DECIMAL(19,2)`, 모든 업무 필드는 생성 후 변경 금지, 날짜·기관·통화·TID UNIQUE |
+| `SmSettlement` / `sm_settlement` | IDENTITY PK, 생성 후 변경하지 않는 필수 날짜·기관30자·통화3자, 날짜·기관·통화 UNIQUE, 필수 지급액·수취액·순액 `DECIMAL(19,2)`, 상태20자 Enum, 필수 LAZY ManyToOne `external_reconciliation_id`, fingerprint64자, `version`의 `@Version` |
+
+위 네 엔티티는 외부 대사의 Spring 테스트를 시작하기 전에 매핑합니다. 정산 표본·대표의 생성자 검증과 업무 메서드는 뒤의 정산 실습에서 작성합니다. 기존 `BaseTimeEntity`의 UTC 감사 시각을 함께 상속하세요. `ReconciliationResultStatus.NORMAL/MISMATCH`는 외부 대사의 거래별 판정을 요약하고, `SettlementStatus.CALCULATED/CONFIRMED`는 정산 계산과 담당자 확인을 구분합니다.
+
+이전 외부 자료를 이미 적용했다면 직접 작성한 비교 로직을 `ExternalReconciliationService.reconcile()`로 옮기고 외부 헤더·상세의 저장 대상을 새 엔티티로 바꿉니다. 옛 `SiSettlementDetail`과 그 Repository 및 `ExternalSettlementItem`은 새 이름으로 전환해 중복 Repository가 남지 않게 정리합니다. `SmSettlement`와 `SettlementService`는 이번 정산 계약으로 변경합니다. 기존 비교 검증은 `ExternalReconciliationExerciseTest`로 옮기고 fixtures의 합계 차액을 `differenceAmount`로 검사합니다. 이미 작성한 송금·내부 대사 코드는 덮어쓰지 않습니다.
 
 ### 4-6-1. 제공된 JSON 파일의 입력과 기대 결과 구분하기
 
-파일은 `materials/lecture-03/02-external/src/test/resources/settlement/`에 있습니다. `SettlementJson.read()`가 반환한 `input`의 세 값만 `SettlementService.calculate()`에 전달합니다. `expected`와 `expectedError`는 테스트에서만 사용하세요. `SettlementJson.read()`는 중복 TID나 잘못된 금액도 그대로 DTO로 변환하므로 Service의 입력 검증을 확인할 수 있습니다.
+파일은 `materials/lecture-03/02-external/src/test/resources/external-reconciliation/`에 있습니다. `ExternalReconciliationJson.read()`가 반환한 `input`의 세 값만 `ExternalReconciliationService.reconcile()`에 전달합니다. `expected`와 `expectedError`는 테스트에서만 사용하세요. 기존 비교 검증 조건은 모두 유지하며 기대 결과의 `settlementAmount`를 업무 의미가 맞는 `differenceAmount`로 변경했습니다. `ExternalReconciliationJson.read()`는 중복 TID나 잘못된 금액도 그대로 DTO로 변환하므로 Service의 입력 검증을 확인할 수 있습니다.
 
-`SettlementJson.read("normal.json")`으로 파일을 읽고, 반환된 `Sample.input()`에서 날짜, 기관 코드와 거래 목록을 읽어 `calculate()`의 세 인자로 전달합니다. 파일 확장자 `.json`까지 전달하세요. `settlementService`는 `SettlementExerciseTest`에 주입해서 사용합니다.
+`ExternalReconciliationJson.read("normal.json")`으로 파일을 읽고, 반환된 `Sample.input()`에서 날짜, 기관 코드와 거래 목록을 읽어 `reconcile()`의 세 인자로 전달합니다. 파일 확장자 `.json`까지 전달하세요. `externalReconciliationService`는 `ExternalReconciliationExerciseTest`에 주입해서 사용합니다.
 
 ```java
 createSampleData();
-var sample = SettlementJson.read("normal.json");
+var sample = ExternalReconciliationJson.read("normal.json");
 var input = sample.input();
-var result = settlementService.calculate(
+var result = externalReconciliationService.reconcile(
     input.baseDate(), input.externalInstitutionCode(), input.externalItems());
 // sample.expected()와 result 및 저장된 상세 결과를 직접 비교하세요.
 ```
 
-오류 자료는 `SettlementJson.read("invalid/negative-amount.json")`처럼 읽습니다. `sample.expectedError()`는 예상 오류 문구이며 Service에 전달하지 않습니다. `externalSourceSnapshot()`은 `SettlementExerciseTest`에 선언한 별도 과제 메서드이며 JSON 파서가 제공하지 않습니다. 4-6-2의 금융 원본 9개 테이블에 `sm_account_daily_closing`을 더해 모든 행과 모든 컬럼을 안정적인 순서로 조회하세요. 외부 정산 전후 반환값을 비교하며 정산 결과 테이블은 원본 비교에서 제외하고 따로 검사합니다.
+오류 자료는 `ExternalReconciliationJson.read("invalid/negative-amount.json")`처럼 읽습니다. `sample.expectedError()`는 예상 오류 문구이며 Service에 전달하지 않습니다. `externalSourceSnapshot()`은 `ExternalReconciliationExerciseTest`에 선언한 별도 과제 메서드이며 JSON 파서가 제공하지 않습니다. 4-6-2의 금융 원본 9개 테이블에 `sm_account_daily_closing`을 더해 모든 행과 모든 컬럼을 안정적인 순서로 조회하세요. 외부 대사 전후 반환값을 비교하며 외부 대사 결과 테이블은 원본 비교에서 제외하고 따로 검사합니다.
 
 | 파일 | 입력의 의미 | 기대 결과 |
 | --- | --- | --- |
@@ -405,13 +432,44 @@ var result = settlementService.calculate(
 | `zero-external-only.json` | 외부에만 0원 기록 존재 | 없는 행과 0원을 구분한 불일치 |
 | `invalid/*.json` 7개 | 중복 TID, 누락된 TID와 금액, 음수, 범위 및 자릿수 초과 | 예외, 결과 행 추가 없음 |
 
-외부 정산의 원본 보존에는 마감 금액·기준일·계좌·상태·보관 시각·기초 표시·검증 시각과 `verified_run_id` 및 감사 시각도 포함합니다. 정상 외부 정산, 잘못된 입력 거절, 같은 자료 재실행에서 모두 동일해야 합니다. 내부 대사 `run()`은 마감 검증 상태를 바꾸므로 이 외부 정산 검사와 같은 snapshot 정책을 공유하지 않습니다. 테스트 준비 중 검증 완료 상태가 필요하다면 외부 정산 전 스냅샷을 찍기 전에 준비합니다.
+외부 대사의 원본 보존에는 마감 금액·기준일·계좌·상태·보관 시각·기초 표시·검증 시각과 `verified_run_id` 및 감사 시각도 포함합니다. 정상 외부 대사, 잘못된 입력 거절, 같은 자료 재실행에서 모두 동일해야 합니다. 내부 대사 `run()`은 마감 검증 상태를 바꾸므로 이 외부 대사 검사와 같은 snapshot 정책을 공유하지 않습니다. 테스트 준비 중 검증 완료 상태가 필요하다면 외부 대사 전 스냅샷을 찍기 전에 준비합니다.
 
 모든 자료는 기본 과제입니다. 운영 규모의 분할 조회와 장애 재시작은 추가 탐구 주제입니다. `ReconciliationService`의 합계 계산 메서드는 제공하지만 어떤 자료를 비교할지, 누락을 어떻게 판정할지는 직접 작성합니다.
 
+### 외부 대사 뒤: 지급·수취 약정으로 순정산 계산하기
+
+외부 대사의 `differenceAmount = externalTotalAmount - internalTotalAmount`는 자료 차액입니다. 실제 정산은 `netSettlementAmount = payableAmount - receivableAmount`를 계산합니다. 양수는 우리 기관의 순지급, 음수는 순수취, 0은 상계 후 지급·수취 없음입니다. 모든 금액은 반올림 없는 `DECIMAL(19,2)`와 `BigDecimal`을 유지합니다.
+
+`02-external`에서 미리 제공한 `SettlementDirection`, `SiSettlementSampleObligation`, `SmSettlement`, `SettlementStatus`와 Repository는 외부 대사 서비스의 선언을 연결하기 위한 코드입니다. 외부 대사 DB 테스트를 실행하기 전에 `SiSettlementSampleObligation`과 `SmSettlement`의 JPA 매핑도 선언대로 먼저 완성합니다. Spring Data는 사용하지 않는 Repository도 생성하므로 이 두 매핑이 없으면 외부 대사 테스트의 컨텍스트가 시작되지 않습니다. 정산 표본의 생성자 검증은 정산-4, 지급·수취·상태 처리는 정산-5~정산-7, 정산 쓰기 잠금 조회는 정산-7에서 구현합니다. 선언을 먼저 제공하는 이유는 외부 대사와 정산 확인의 범위 잠금 계약이 연결되어 있기 때문입니다. 이어서 `03-settlement/src`를 추가하세요. 기존 외부 대사 파일을 다시 덮어쓰지 않습니다.
+
+| 순서 | 작성할 부분 | 제공하는 계약 |
+| --- | --- | --- |
+| 정산-1~정산-3 | 정산과 대사의 차이, 외부 대사 구현 | `SmExternalReconciliation`과 `SiExternalReconciliationDetail`은 대사 실행·상세 이력 |
+| 정산-4 | 앞서 매핑한 표본의 필수값·금액·방향 검증 | `SiSettlementSampleObligation(baseDate, institution, currency, tid, gid, direction, amount)` |
+| 정산-5~정산-6 | 지급액과 수취액 각각 합산 후 차감 | `SmSettlement`의 `payableAmount`, `receivableAmount`, `netSettlementAmount` |
+| 정산-7 | 대사 연결과 재계산·확정 제한 | `SettlementService.calculate(date, institution, currency, externalReconciliationId)`, `confirm(settlementId)` |
+| 정산-8 | A/B/C/D, 범위·최신성·재실행·롤백 검증 | `SettlementSamples`, `SettlementTestSupport`, `SettlementExerciseTest` |
+
+`SiSettlementSampleObligation`의 출처는 교육용 기관 간 지급·수취 약정입니다. `03-settlement/src/test/resources/settlement/case-a.json`부터 `case-d.json`까지의 자료를 `SettlementSamples`가 입력 DTO와 테스트 기대값으로 나누어 읽습니다. JSON 읽기는 업무 집계나 확정 검증을 수행하지 않습니다. `SettlementTestSupport.createSampleObligations()`는 이 표본만 저장하며 기존 송금 API·잔액·원장·송금 완료 상태를 생성하거나 바꾸지 않습니다. 표본의 금액은 양수, 방향은 `PAYABLE` 또는 `RECEIVABLE`이며 날짜·기관·통화·TID가 같은 표본은 중복 저장하지 않습니다. 다른 통화나 날짜는 별도 범위로 집계합니다.
+
+외부 대사의 두 진입점을 구분하세요. `ExternalReconciliationService.reconcile()`은 기존 완료 오더를 TID로 비교하는 `TRANSFER_ORDER` 출처입니다. `reconcileSettlementObligations()`는 정산 표본의 TID·금액·지급 방향을 비교하는 `SETTLEMENT_SAMPLE_OBLIGATION` 출처입니다. 정산 계산과 확정은 후자의 결과만 연결합니다. `SettlementTargets`는 정렬한 표본의 ID·날짜·기관·통화·TID·GID·방향·금액을 길이 구분해 SHA-256으로 표시하는 기술 코드이며 제공됩니다. 집계나 대사 판정은 이 함수에 넣지 않습니다.
+
+대사는 매 실행마다 새 헤더·상세를 저장합니다. 정산은 날짜·기관·통화 UNIQUE 범위에서 `CALCULATED` 초안을 같은 ID로 다시 계산하고 새 대사를 연결합니다. `CONFIRMED` 금액은 덮어쓸 수 없습니다. 최신 표본 대사와 현재 표본의 fingerprint가 일치해야 계산할 수 있으며, 최신 대사가 `MISMATCH`인 경우에도 참고용 `CALCULATED` 금액은 저장합니다. 담당자 확인인 `confirm()`은 연결된 최신 대사가 `NORMAL`이고 현재 표본이 계산 당시와 같을 때만 허용합니다. 정상 대사의 합계 차액이 0인지뿐 아니라 거래별 상태를 검사하세요. `CALCULATED`와 `CONFIRMED` 모두 실제 외부 지급 실행 상태가 아닙니다.
+
+대사 저장, 정산 계산, 담당자 확인은 별도의 Service 트랜잭션입니다. `confirm()` 거절이 이전에 저장한 불일치 대사 헤더·상세를 지워서는 안 됩니다. 정산 조회·재계산·확정의 쓰기 잠금은 `SmSettlementRepository.findScopeForUpdate()`와 `findByIdForUpdate()`에 직접 작성합니다. 정산-6의 순액 저장 검증에는 외부 대사 4-2에서 추가한 `StoredMoney.signed()`를 그대로 재사용합니다. 지급액·수취액과 표본 거래 금액의 0 이상/양수 검증도 유지합니다.
+
+| 표본 | 지급액 | 수취액 | 순정산액 | 외부 대사와 확정 |
+| --- | ---: | ---: | ---: | --- |
+| A | 300,000 | 100,000 | +200,000 | `NORMAL`, 확인 가능 |
+| B | 100,000 | 300,000 | −200,000 | `NORMAL`, 확인 가능 |
+| C | 300,000 | 300,000 | 0 | `NORMAL`, 확인 가능 |
+| D | 300,000 | 0 | +300,000 참고 금액 | 합계는 양쪽 300,000, 상세 2건 `MISMATCH`, 확인 거절 |
+
+D의 내부 표본은 `T-TRANSFER` 300,000원 지급 1건입니다. 외부는 같은 TID 200,000원과 없는 `T-EXTERNAL-ONLY` 100,000원입니다. `SettlementSamples.caseD()`의 `expected`는 실제 Service에 전달하지 않습니다. 정상 외부 대사 결과·정산 FK, 과거 정상 결과로 최신 불일치 우회 금지, 재대사 후 표본 변경, 확정 후 재계산, 저장 실패 롤백도 과제 테스트에 포함됩니다. 테스트의 `exercise` 태그는 미완성 과제를 구분하는 표식이며 통과 처리나 비활성화를 뜻하지 않습니다.
+
 ### 5-1. 마감 저장과 대사를 각각 예약하기
 
-`ReconciliationSchedulingConfig`의 예약 활성화와 두 스케줄러의 `runDaily()`에 `@Scheduled`를 작성합니다. `DailyClosingScheduler`는 `DailyClosingService.capture()`를, `ReconciliationScheduler`는 `ReconciliationService.run()`을 호출합니다. 둘 다 주입된 `Clock`으로 **UTC 실행일의 전날**을 계산합니다.
+`04-scheduling/src`를 추가한 뒤 `ReconciliationSchedulingConfig`의 예약 활성화와 두 스케줄러의 `runDaily()`에 `@Scheduled`를 작성합니다. `DailyClosingScheduler`는 `DailyClosingService.capture()`를, `ReconciliationScheduler`는 `ReconciliationService.run()`을 호출합니다. 둘 다 주입된 `Clock`으로 **UTC 실행일의 전날**을 계산합니다.
 
 | 작업 | 설정 키 | 환경 변수 | `batch`에서 구현할 예약식 |
 | --- | --- | --- | --- |
@@ -433,7 +491,7 @@ var result = settlementService.calculate(
 | 실행 범위 | 사용할 설정과 프로필 |
 | --- | --- |
 | 보안 DB 통합 테스트와 8-4 | `SecurityTestSupport`를 상속하면 `test`, `security-test`, MockMvc와 DB 초기화가 적용됩니다. |
-| 기존 2강과 3강의 DB 통합 테스트 | `TransferIntegrationExerciseTest`, `ReconciliationIntegrationExerciseTest`, `SettlementExerciseTest`에 `@ActiveProfiles("security-test")`를 추가합니다. 상위 클래스의 `test`가 함께 상속됩니다. |
+| 기존 2강과 3강의 DB 통합 테스트 | `TransferIntegrationExerciseTest`, `ReconciliationIntegrationExerciseTest`, `ExternalReconciliationExerciseTest`, `SettlementExerciseTest`에 `@ActiveProfiles("security-test")`를 추가합니다. 상위 클래스의 `test`가 함께 상속됩니다. |
 | 별도로 작성한 Spring DB 테스트 | `@ActiveProfiles({"test", "security-test"})`를 적용합니다. |
 | 일반 로컬 앱 실행 | DB 환경변수와 `security.env.example`의 환경변수를 준비한 뒤 `security` 프로필을 활성화합니다. |
 | DTO, 마스킹, 스케줄러 직접 호출 등 DB 없는 단위테스트 | Spring 프로필을 추가하거나 DB 준비 클래스를 상속하지 않습니다. |
@@ -539,12 +597,18 @@ FinancialTestData.openingDeposit(accountId, amount, accountBalanceRepository,
 | 3강 3-3~3-8, 6-3 | `ReconciliationIntegrationExerciseTest.mismatchedClosingCannotServeAsTheNextDayOpening()` | 불일치 마감의 검증 거절, 이후 날짜 기준 무효화 |
 | 3강 3-6, 6-3 | `ReconciliationIntegrationExerciseTest.ledgerOnlyAndJournalAndLedgerCorruptionHaveDifferentResults()` | 정상 샘플에서 금액 및 고객 계좌를 변경한 원장 오류 구분 |
 | 1강 3-1 복습, 3강 3-7-1 | `ReconciliationExerciseTest.nullCompletionTimeIsRejectedBeforeTransactionStateChanges()` | 거래와 오더의 null 완료 시각 입력을 거절하고 상태·시각·링크 보존 |
-| 3강 3-7-1, 6-3 | `ReconciliationIntegrationExerciseTest.completedTransactionsWithoutCompletionTimeRemainLifecycleCandidates()` | 완료 시각 null 후보의 요청·상세·전표 기간 조회와 거래 ID 중복 제거 |
-| 3강 3-7-1, 6-3 | `ReconciliationIntegrationExerciseTest.apiOrderCompletionTimesMustMatchInBothDirections()` | 정확한 완료 시각 및 null을 거래·오더 양방향으로 검사 |
-| 3강 3-4, 6-3 | `ReconciliationIntegrationExerciseTest.matchingAmountsDoNotMakeAnUnpostedJournalNormal()` | 금액이 맞는 DRAFT·CANCELLED 전표의 구조 불일치 |
-| 3강 4-6-2 | `SettlementExerciseTest.suppliedFilesDetectDifferencesMissingRowsAndOffsettingTotals()` | `ReconciliationTestSupport`의 기관 오더와 정상 형식 JSON 6개, 재실행 검증 |
-| 3강 4-6-3 | `SettlementExerciseTest.invalidInputIsRejectedWithoutSavingResults()` | 입력 오류 JSON 7개와 결과 미저장 검증 |
-| 3강 4-6-2~4-6-3 | `SettlementExerciseTest.externalSettlementPreservesAllDailyClosingColumns()` | 외부 정산의 정상·거절·재실행에서 금융·마감 전체 원본 보존 |
+| 3강 4-6-2 | `ExternalReconciliationExerciseTest.suppliedFilesDetectDifferencesMissingRowsAndOffsettingTotals()` | `ExternalReconciliationTestSupport`의 기관 오더와 정상 형식 JSON 6개, 재실행 검증 |
+| 3강 4-6-3 | `ExternalReconciliationExerciseTest.invalidInputIsRejectedWithoutSavingResults()` | 입력 오류 JSON 7개와 결과 미저장 검증 |
+| 3강 4-6-2~4-6-3 | `ExternalReconciliationExerciseTest.externalReconciliationPreservesAllDailyClosingColumns()` | 외부 대사의 정상·거절·재실행에서 금융·마감 전체 원본 보존 |
+| 3강 4-5~4-6 | `ExternalReconciliationExerciseTest.scopeValidationAndStorageFailurePreserveExistingResultsAndSourceRows()` | 범위·필수 입력과 대사 저장 실패 롤백 |
+| 3강 정산-8 | `SettlementExerciseTest.caseAProducesNetPayableAndLinksTheNormalExternalRun()` | A: 지급300,000/수취100,000/순지급200,000, 정상 대사 연결·확인 |
+| 3강 정산-8 | `SettlementExerciseTest.caseBProducesNegativeNetReceivable()` | B: 순수취200,000, net=-200,000 |
+| 3강 정산-8 | `SettlementExerciseTest.caseCProducesZeroNetSettlement()` | C: 지급·수취 동일, net=0 |
+| 3강 정산-8 | `SettlementExerciseTest.caseDStoresMismatchAndCalculationButCannotConfirm()` | D: 합계 차0·상세 불일치2, 참고 계산 보관·확정 거절 |
+| 3강 정산-8 | `SettlementExerciseTest.rejectsUnrelatedLegacyOrStaleReconciliationAtCalculationAndConfirmation()` | 다른 범위·오더 출처·과거 대사·변경 표본 거절 |
+| 3강 정산-8 | `SettlementExerciseTest.repeatedCalculationUpdatesOneDraftAndProtectsConfirmedResults()` | 같은 범위 초안 ID 갱신, 확정 후 덮어쓰기 금지 |
+| 3강 정산-8 | `SettlementExerciseTest.calculationAndConfirmationRollBackWhenSavingFails()` | 계산·초안 갱신·확정 저장 실패 롤백 |
+| 3강 정산-8 | `SettlementExerciseTest.scopesObligationsAndRejectsInvalidOrOverflowingAmounts()` | 범위 집계와 필수값·양수 금액·합계 범위 검증 |
 | 3강 5-3 | `SchedulerExerciseTest.passesPreviousUtcDateToReconciliation()` | 고정 Clock과 Mock으로 대사에 UTC 전날 전달 검증 |
 | 3강 5-3 | `SchedulerExerciseTest.passesPreviousUtcDateToClosing()` | Clock의 표시 시간대와 무관하게 마감에 UTC 전날 전달 검증 |
 | 3강 5-3 | `SchedulerExerciseTest.propagatesFailuresFromBothBatchServices()` | 두 서비스의 실패가 스케줄러 호출자에게 전달되는지 검증 |
@@ -560,7 +624,7 @@ FinancialTestData.openingDeposit(accountId, amount, accountBalanceRepository,
 
 ```sh
 ./gradlew test --tests '*TransferRequestExerciseTest' --tests '*TransferExerciseTest' --tests '*TransferIntegrationExerciseTest'
-./gradlew test --tests '*ReconciliationExerciseTest' --tests '*ReconciliationIntegrationExerciseTest' --tests '*SettlementExerciseTest' --tests '*SchedulerExerciseTest'
+./gradlew test --tests '*ReconciliationExerciseTest' --tests '*ReconciliationIntegrationExerciseTest' --tests '*ExternalReconciliationExerciseTest' --tests '*SettlementExerciseTest' --tests '*SchedulerExerciseTest'
 ./gradlew test --tests '*SecurityExerciseTest' --tests '*SecurityIntegrationExerciseTest' --tests '*OpeningDepositExerciseTest'
 ```
 
@@ -686,36 +750,53 @@ FinancialTestData.openingDeposit(accountId, amount, accountBalanceRepository,
 - `materials/lecture-03/01-internal/src/test/java/com/sparta/fintech/ledger/exercise/ReconciliationIntegrationExerciseTest.java`
 - `materials/lecture-03/01-internal/src/test/java/com/sparta/fintech/ledger/support/InternalReconciliationTestSupport.java`
 - `materials/lecture-03/01-internal/src/test/java/com/sparta/fintech/ledger/support/MutableBusinessClock.java`
+- `materials/lecture-03/02-external/src/main/java/com/sparta/fintech/ledger/domain/ExternalReconciliationSource.java`
+- `materials/lecture-03/02-external/src/main/java/com/sparta/fintech/ledger/domain/SettlementDirection.java`
 - `materials/lecture-03/02-external/src/main/java/com/sparta/fintech/ledger/domain/SettlementStatus.java`
-- `materials/lecture-03/02-external/src/main/java/com/sparta/fintech/ledger/domain/SiSettlementDetail.java`
+- `materials/lecture-03/02-external/src/main/java/com/sparta/fintech/ledger/domain/SiExternalReconciliationDetail.java`
+- `materials/lecture-03/02-external/src/main/java/com/sparta/fintech/ledger/domain/SiSettlementSampleObligation.java`
+- `materials/lecture-03/02-external/src/main/java/com/sparta/fintech/ledger/domain/SmExternalReconciliation.java`
 - `materials/lecture-03/02-external/src/main/java/com/sparta/fintech/ledger/domain/SmSettlement.java`
-- `materials/lecture-03/02-external/src/main/java/com/sparta/fintech/ledger/reconciliation/service/ExternalSettlementItem.java`
-- `materials/lecture-03/02-external/src/main/java/com/sparta/fintech/ledger/reconciliation/service/SettlementCalculationResult.java`
-- `materials/lecture-03/02-external/src/main/java/com/sparta/fintech/ledger/reconciliation/service/SettlementService.java`
-- `materials/lecture-03/02-external/src/main/java/com/sparta/fintech/ledger/repository/SiSettlementDetailRepository.java`
+- `materials/lecture-03/02-external/src/main/java/com/sparta/fintech/ledger/reconciliation/service/ExternalReconciliationItem.java`
+- `materials/lecture-03/02-external/src/main/java/com/sparta/fintech/ledger/reconciliation/service/ExternalReconciliationResult.java`
+- `materials/lecture-03/02-external/src/main/java/com/sparta/fintech/ledger/reconciliation/service/ExternalReconciliationService.java`
+- `materials/lecture-03/02-external/src/main/java/com/sparta/fintech/ledger/reconciliation/service/SettlementTargets.java`
+- `materials/lecture-03/02-external/src/main/java/com/sparta/fintech/ledger/repository/SiExternalReconciliationDetailRepository.java`
+- `materials/lecture-03/02-external/src/main/java/com/sparta/fintech/ledger/repository/SiSettlementSampleObligationRepository.java`
+- `materials/lecture-03/02-external/src/main/java/com/sparta/fintech/ledger/repository/SmExternalReconciliationRepository.java`
 - `materials/lecture-03/02-external/src/main/java/com/sparta/fintech/ledger/repository/SmSettlementRepository.java`
-- `materials/lecture-03/02-external/src/test/java/com/sparta/fintech/ledger/exercise/SettlementExerciseTest.java`
-- `materials/lecture-03/02-external/src/test/java/com/sparta/fintech/ledger/preparation/SettlementMaterialsSmokeTest.java`
-- `materials/lecture-03/02-external/src/test/java/com/sparta/fintech/ledger/support/ReconciliationTestSupport.java`
-- `materials/lecture-03/02-external/src/test/java/com/sparta/fintech/ledger/support/SettlementJson.java`
-- `materials/lecture-03/02-external/src/test/resources/settlement/amount-mismatch.json`
-- `materials/lecture-03/02-external/src/test/resources/settlement/external-only.json`
-- `materials/lecture-03/02-external/src/test/resources/settlement/invalid/amount-overflow.json`
-- `materials/lecture-03/02-external/src/test/resources/settlement/invalid/duplicate-tid-different-amount.json`
-- `materials/lecture-03/02-external/src/test/resources/settlement/invalid/duplicate-tid.json`
-- `materials/lecture-03/02-external/src/test/resources/settlement/invalid/missing-amount.json`
-- `materials/lecture-03/02-external/src/test/resources/settlement/invalid/missing-tid.json`
-- `materials/lecture-03/02-external/src/test/resources/settlement/invalid/negative-amount.json`
-- `materials/lecture-03/02-external/src/test/resources/settlement/invalid/too-many-decimal-places.json`
-- `materials/lecture-03/02-external/src/test/resources/settlement/missing-bank.json`
-- `materials/lecture-03/02-external/src/test/resources/settlement/normal.json`
-- `materials/lecture-03/02-external/src/test/resources/settlement/offsetting-differences.json`
-- `materials/lecture-03/02-external/src/test/resources/settlement/zero-external-only.json`
-- `materials/lecture-03/03-scheduling/src/main/java/com/sparta/fintech/ledger/reconciliation/scheduler/DailyClosingScheduler.java`
-- `materials/lecture-03/03-scheduling/src/main/java/com/sparta/fintech/ledger/reconciliation/scheduler/ReconciliationScheduler.java`
-- `materials/lecture-03/03-scheduling/src/main/java/com/sparta/fintech/ledger/reconciliation/scheduler/ReconciliationSchedulingConfig.java`
-- `materials/lecture-03/03-scheduling/src/main/resources/application-batch.yml`
-- `materials/lecture-03/03-scheduling/src/test/java/com/sparta/fintech/ledger/exercise/SchedulerExerciseTest.java`
+- `materials/lecture-03/02-external/src/test/java/com/sparta/fintech/ledger/exercise/ExternalReconciliationExerciseTest.java`
+- `materials/lecture-03/02-external/src/test/java/com/sparta/fintech/ledger/preparation/ExternalReconciliationMaterialsSmokeTest.java`
+- `materials/lecture-03/02-external/src/test/java/com/sparta/fintech/ledger/support/ExternalReconciliationJson.java`
+- `materials/lecture-03/02-external/src/test/java/com/sparta/fintech/ledger/support/ExternalReconciliationTestSupport.java`
+- `materials/lecture-03/02-external/src/test/resources/external-reconciliation/amount-mismatch.json`
+- `materials/lecture-03/02-external/src/test/resources/external-reconciliation/external-only.json`
+- `materials/lecture-03/02-external/src/test/resources/external-reconciliation/invalid/amount-overflow.json`
+- `materials/lecture-03/02-external/src/test/resources/external-reconciliation/invalid/duplicate-tid-different-amount.json`
+- `materials/lecture-03/02-external/src/test/resources/external-reconciliation/invalid/duplicate-tid.json`
+- `materials/lecture-03/02-external/src/test/resources/external-reconciliation/invalid/missing-amount.json`
+- `materials/lecture-03/02-external/src/test/resources/external-reconciliation/invalid/missing-tid.json`
+- `materials/lecture-03/02-external/src/test/resources/external-reconciliation/invalid/negative-amount.json`
+- `materials/lecture-03/02-external/src/test/resources/external-reconciliation/invalid/too-many-decimal-places.json`
+- `materials/lecture-03/02-external/src/test/resources/external-reconciliation/missing-bank.json`
+- `materials/lecture-03/02-external/src/test/resources/external-reconciliation/normal.json`
+- `materials/lecture-03/02-external/src/test/resources/external-reconciliation/offsetting-differences.json`
+- `materials/lecture-03/02-external/src/test/resources/external-reconciliation/zero-external-only.json`
+- `materials/lecture-03/03-settlement/src/main/java/com/sparta/fintech/ledger/reconciliation/service/SettlementCalculationResult.java`
+- `materials/lecture-03/03-settlement/src/main/java/com/sparta/fintech/ledger/reconciliation/service/SettlementService.java`
+- `materials/lecture-03/03-settlement/src/test/java/com/sparta/fintech/ledger/exercise/SettlementExerciseTest.java`
+- `materials/lecture-03/03-settlement/src/test/java/com/sparta/fintech/ledger/preparation/SettlementMaterialsSmokeTest.java`
+- `materials/lecture-03/03-settlement/src/test/java/com/sparta/fintech/ledger/support/SettlementSamples.java`
+- `materials/lecture-03/03-settlement/src/test/java/com/sparta/fintech/ledger/support/SettlementTestSupport.java`
+- `materials/lecture-03/03-settlement/src/test/resources/settlement/case-a.json`
+- `materials/lecture-03/03-settlement/src/test/resources/settlement/case-b.json`
+- `materials/lecture-03/03-settlement/src/test/resources/settlement/case-c.json`
+- `materials/lecture-03/03-settlement/src/test/resources/settlement/case-d.json`
+- `materials/lecture-03/04-scheduling/src/main/java/com/sparta/fintech/ledger/reconciliation/scheduler/DailyClosingScheduler.java`
+- `materials/lecture-03/04-scheduling/src/main/java/com/sparta/fintech/ledger/reconciliation/scheduler/ReconciliationScheduler.java`
+- `materials/lecture-03/04-scheduling/src/main/java/com/sparta/fintech/ledger/reconciliation/scheduler/ReconciliationSchedulingConfig.java`
+- `materials/lecture-03/04-scheduling/src/main/resources/application-batch.yml`
+- `materials/lecture-03/04-scheduling/src/test/java/com/sparta/fintech/ledger/exercise/SchedulerExerciseTest.java`
 
 </details>
 
