@@ -62,7 +62,7 @@ public abstract class SecurityTestSupport {
         practiceClock.set(Instant.now());
         TestDatabaseReset.clear(dataSource);
     }
-    protected SecurityFixture createSecurityFixture(String ownerBalance, String dailyLimit) {
+    protected SecurityFixture createSecurityFixture(String ownerBalance) {
         Instant openedAt = clock.instant();
         AcAuthRole customerRole = authRoleRepository.save(new AcAuthRole(
             "ROLE_CUSTOMER",
@@ -121,9 +121,7 @@ public abstract class SecurityTestSupport {
             BigDecimal.ZERO
         ));
         addTransferLimit(ownerCustomer, ownerAccount, LimitPeriod.PER_TRANSACTION, "1000000.00");
-        addTransferLimit(ownerCustomer, ownerAccount, LimitPeriod.DAILY, dailyLimit);
         addTransferLimit(otherCustomer, otherAccount, LimitPeriod.PER_TRANSACTION, "1000000.00");
-        addTransferLimit(otherCustomer, otherAccount, LimitPeriod.DAILY, "1000000.00");
         ledgerAccountRepository.save(new LcLedgerAccount("210101", "고객예수금", DebitCreditType.CREDIT));
 
         return new SecurityFixture(

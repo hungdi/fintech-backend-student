@@ -512,21 +512,19 @@ Properties의 compact 생성자에서 기본 issuer `sparta-fintech`와 양수�
 
 기본 실습은 LOCAL 사용자 로그인입니다. 제공자 URL은 예시이므로 실제 외부 로그인은 유효한 제공자 등록과 연결된 계정을 준비한 뒤 2-6에서 진행합니다. 테스트의 `training-client` 등은 공개된 가짜 설정입니다.
 
-### 3-4. 보안 서비스에서 한도 검증 및 Controller 연결
+### 3-2. 로그인 고객의 출금 계좌 소유권 확인과 Controller 연결
 
-기존 `TransferController`에서 `TransferService` 필드, import 및 생성자 인자를 소유권과 한도를 검사하는 `SecureTransferService`로 연결합니다. `transfer()`의 기존 Request 변환은 유지하고 호출 대상과 고객 역할 검사를 추가합니다. `SecurityConfig`의 메서드 보안 활성화와 인증이 필요한 Controller의 역할 제약도 작성하세요. 고객 API는 `ROLE_CUSTOMER`, 운영 대사 조회는 `ROLE_OPERATIONS`를 사용합니다.
+기존 `TransferController`에서 `TransferService` 필드, import 및 생성자 인자를 `SecureTransferService`로 연결합니다. `transfer()`의 기존 Request 변환은 유지하고 호출 대상과 고객 역할 검사를 추가합니다. `SecurityConfig`의 메서드 보안 활성화와 인증이 필요한 Controller의 역할 제약도 작성하세요. 고객 API는 `ROLE_CUSTOMER`, 운영 대사 조회는 `ROLE_OPERATIONS`를 사용합니다.
 
-`TransferService`와 `TransferProcessor`의 `TransferPolicy` 인자 메서드는 2강에 이미 있습니다. `SecureTransferService`에서 소유권과 일일 한도 정책을 연결하세요. 일일 한도 검사는 새 송금의 잔액 Lock을 얻은 트랜잭션 안에서 수행합니다. UTC 기준 해당 날짜의 완료 송금액과 이번 요청 금액을 합산해 한도와 비교하세요. 완료된 요청의 재시도에서는 이미 완료된 송금액을 신규 사용액으로 다시 더하지 않습니다. 바깥 트랜잭션을 추가해 커밋 전에 요청 키 Lock이 풀리게 만들지 않습니다.
+`TransferService`와 `TransferProcessor`의 `TransferPolicy` 인자 메서드는 2강에 이미 있습니다. `SecureTransferService`의 검증 콜백에서 출금 계좌와 로그인 고객의 소유권을 새 송금과 완료된 송금의 재요청 모두 확인하세요. `TransferPolicy`의 `replay` 인자와 기존 요청 키 처리 및 잔액 Lock 순서를 유지합니다. 바깥 트랜잭션을 추가해 커밋 전에 요청 키 Lock이 풀리게 만들지 않습니다. 감사 로그의 성공·실패 처리와 보안 HTTP 오류 응답도 기존 과제로 유지합니다.
 
-기존 Repository에 다음 계약을 추가합니다. 첫 메서드는 default 본문을 없애고 완료 상태와 출금 계좌 및 UTC 시간 범위의 합계 JPQL로 구현합니다. 나머지는 파생 조회입니다.
+### 3-3. 출금 계좌와 고객 상태 검증
+
+`SecureTransferService.validateActive()`에서 출금 계좌와 연결된 고객이 모두 `ACTIVE`인지 새 송금에서만 검사하세요. 완료된 요청의 재요청에는 소유권을 확인한 뒤 기존 결과를 반환하고 상태 검사를 반복하지 않습니다. 2강 `TransferProcessor`의 기존 계좌·고객 상태, 잔액, 건별 송금 한도와 금융 업무 검증은 그대로 유지합니다.
+
+기존 Repository에는 이후 원장 조회와 운영 대사 조회에 필요한 다음 계약만 추가합니다. 두 메서드는 파생 조회입니다.
 
 ```java
-// DmTransferOrderRepository
-// TODO [특강 4 / 3-4] 완료 송금 금액의 합계를 조회하세요.
-default java.math.BigDecimal sumCompletedWithdrawalAmount(Long accountId,
-    java.time.Instant startAt, java.time.Instant endAt) {
-    throw new UnsupportedOperationException("TODO [특강 4 / 3-4] 일일 사용액 조회를 작성하세요.");
-}
 // LiAccountingLedgerRepository
 List<LiAccountingLedger> findByCustomerAccountAccountId(Long accountId);
 // SiReconciliationResultRepository
@@ -534,7 +532,7 @@ org.springframework.data.domain.Page<SiReconciliationResult> findByReconciliatio
     Long reconciliationRunId, org.springframework.data.domain.Pageable pageable);
 ```
 
-`AmAuthUserRepository` 등의 미완성 default 조회도 같은 방식으로 본문을 없애고 조회와 필요한 참조 로딩을 작성합니다. 엔티티의 관계가 지연 로딩일 때 서비스 경계 밖에서 접근 가능한지도 확인하세요.
+`AmAuthUserRepository` 등의 미완성 default 조회도 본문을 없애고 조회와 필요한 참조 로딩을 작성합니다. 엔티티의 관계가 지연 로딩일 때 서비스 경계 밖에서 접근 가능한지도 확인하세요.
 
 ### 4-1. 암호문 형식 확인과 변조 검증 구분하기
 
@@ -558,7 +556,7 @@ org.springframework.data.domain.Page<SiReconciliationResult> findByReconciliatio
 
 HTTP 요청을 위한 `login()`, `bearer()`, `transferBody()`, 응답 JSON 읽기와 감사 조회 메서드는 7-1-2를 참고해 통합 테스트에 직접 작성합니다. `LedgerPostingService`, `DailyClosingService`, `ReconciliationService`, 마감 Repository와 `practiceClock`은 `SecurityTestSupport`의 제공된 주입 필드를 그대로 사용합니다. 중복 필드를 선언하지 말고 `PlatformTransactionManager`와 제공되지 않은 추가 Repository만 테스트에 직접 주입하세요. 제공한 `MutableBusinessClock`으로 업무 날짜를 진행합니다. `SecurityFixture`는 `ownerCustomerId()`, `ownerAccountNo()`, `otherAccountNo()`를 제공하며 계좌 ID는 Repository로 조회합니다.
 
-`SecurityTestSupport.createSecurityFixture(ownerBalance, dailyLimit)`은 `owner`와 `other`, `410-001`과 `410-002`, 한도와 잔액만 준비합니다. 로그인 비밀번호는 `owner-pass`, `other-pass`이며 앞에서 구현한 PasswordEncoder와 암호화 Service를 사용합니다. 잔액만 준비한 샘플의 대사가 정상이라고 기대하지 않습니다.
+`SecurityTestSupport.createSecurityFixture(ownerBalance)`은 `owner`와 `other`, `410-001`과 `410-002`, 건별 송금 한도와 잔액만 준비합니다. 로그인 비밀번호는 `owner-pass`, `other-pass`이며 앞에서 구현한 PasswordEncoder와 암호화 Service를 사용합니다. 잔액만 준비한 샘플의 대사가 정상이라고 기대하지 않습니다.
 
 샘플의 `owner-mfa-secret`과 `other-mfa-secret`은 암호화 실습용 시크릿입니다. 추가 인증 기능은 구현하지 않습니다. 로그인 비밀번호, JWT 서명 키, 암호화 대상 시크릿의 용도를 구분하세요.
 
@@ -616,7 +614,7 @@ FinancialTestData.openingDeposit(accountId, amount, accountBalanceRepository,
 | 3강 5-3 | `SchedulerExerciseTest.eitherBatchCanBeDisabledWithoutDisablingTheOther()` | 한 예약을 꺼도 다른 예약이 유지되는지 검증하는 과제 |
 | 4강 4-2부터 4-4 | `SecurityExerciseTest.masksAccountNumber()` | DB 없는 마스킹 검증 |
 | 4강 7-1~7-3 | `SecurityIntegrationExerciseTest.loginOwnershipRoleAndTokenFailures()` | `SecurityTestSupport`로 로그인, 소유권, 역할, 만료 및 변조 토큰 검증 |
-| 4강 8-2 | `SecurityIntegrationExerciseTest.dailyLimitReplayAndDurableCompletion()` | 누적 한도, 재시도, 동시 요청과 송금 완료 기록 검증 |
+| 4강 8-2 | `SecurityIntegrationExerciseTest.idempotentReplayAndDurableCompletion()` | 재시도 소유권, 상태 검사 범위, 동시 요청·감사 로그·송금 완료 기록 검증 |
 | 4강 8-4 | `OpeningDepositExerciseTest.openingDepositWithHeldFundsRecordsLedgerBalance()` | 원장 금액 100,000원, 사용가능잔액 80,000원에서 입금 후 balanceAfter 검증 |
 | 4강 8-4 | `OpeningDepositExerciseTest.loginTransferReplayAndReconciliationUseCompleteOpeningLedger()` | 실제 기초 등록, 초기 원장과 로그인, 송금·재시도, 다음 UTC 날짜 마감과 VERIFIED 확인 |
 
