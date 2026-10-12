@@ -538,6 +538,12 @@ org.springframework.data.domain.Page<SiReconciliationResult> findByReconciliatio
 
 `SensitiveDataCryptoService.encrypt()`는 암호화 실습용 시크릿을 암호화하고 `gcm:v1:` 접두어를 붙입니다. `decrypt()`에서는 지원하는 접두어인지 확인한 뒤 복호화 과정에서 변조 여부를 검증하세요. 접두어 확인 실패는 “지원하지 않는 암호문 형식입니다.”, 복호화 중 검증 실패는 “암호문 검증에 실패했습니다.”로 구분합니다.
 
+### 4-3. 고객 원장 응답에서 추적 ID 제외하기
+
+`SecureLedgerQueryService`에서 본인 계좌의 원장을 조회한 뒤 계좌번호를 마스킹하세요. `MaskedLedgerItem`과 `MaskedLedgerItemResponse`는 `accountingLedgerItemId`, `ledgerAccountCode`, `ledgerAccountName`, `maskedCustomerAccountNo`, `debitCreditType`, `amount`, `transactionDate`의 7개 필드만 제공합니다. 고객 원장 응답에는 `tid`, `gid`, `oid`와 이전 `maskedTid`, `maskedGid`, `maskedOid` 필드를 포함하지 않습니다. DB 원장과 내부 감사 기록의 TID/GID/OID 및 송금 응답 계약은 유지합니다. 계좌번호와 이메일 및 전화번호를 가리는 메서드만 `MaskingService`에서 구현합니다.
+
+`SecurityIntegrationExerciseTest.loginOwnershipRoleAndTokenFailures()`의 기존 과제에 본인 원장 조회의 정확한 7개 JSON 키와 값, 추적 ID 필드 없음, 계좌번호 마스킹을 함께 검증하세요. 본인·타인 계좌 접근과 인증·역할 및 감사 기록의 검증도 유지합니다. DTO 변환은 제공하고 조회·소유권·마스킹 업무 메서드는 학생 TODO로 남깁니다.
+
 ### 5-3-1. 감사 기록에 저장할 문자열 처리하기
 
 `AuditLogService.safeText()`는 줄바꿈과 탭을 공백으로 바꾸고, 이메일과 숫자 패턴을 마스킹한 뒤 길이를 제한하는 메서드로 구현합니다. `save()`에서는 해당 문자열 필드에 `safeText()`로 처리한 값을 사용하세요. 모든 개인정보를 자동으로 찾아내는 기능으로 가정하지 않습니다.

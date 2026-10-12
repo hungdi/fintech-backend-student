@@ -6,9 +6,6 @@ import java.time.LocalDate;
 
 public record MaskedLedgerItem(
     Long accountingLedgerItemId,
-    String maskedTid,
-    String maskedGid,
-    String maskedOid,
     String ledgerAccountCode,
     String ledgerAccountName,
     String maskedCustomerAccountNo,
