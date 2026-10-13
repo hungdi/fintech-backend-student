@@ -16,7 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
-/** TODO [특강 4 / 4-3] 원장 조회 계좌의 소유권을 확인하고 민감정보를 마스킹하세요. */
+/** TODO [특강 4 / 4-3] 원장 조회 계좌의 소유권을 확인하고 계좌번호를 마스킹한 7개 필드를 응답하세요. 고객 원장 응답에 TID/GID/OID를 포함하지 않습니다. */
 public class SecureLedgerQueryService {
 
     private final DmAccountRepository accountRepository;
@@ -40,17 +40,17 @@ public class SecureLedgerQueryService {
     }
 
     public List<MaskedLedgerItem> getMyLedgerItems(String accountNo) {
-        // TODO [특강 4 / 4-3] 원장 조회 계좌의 소유권을 확인하고 민감정보를 마스킹하세요.
-        throw new UnsupportedOperationException("TODO [특강 4 / 4-3] 원장 조회 계좌의 소유권을 확인하고 민감정보를 마스킹하세요.");
+        // TODO [특강 4 / 4-3] 원장 조회 계좌의 소유권을 확인하고 계좌번호를 마스킹한 7개 필드를 응답하세요. 고객 원장 응답에 TID/GID/OID를 포함하지 않습니다.
+        throw new UnsupportedOperationException("TODO [특강 4 / 4-3] 원장 조회 계좌의 소유권을 확인하고 계좌번호를 마스킹한 7개 필드를 응답하세요. 고객 원장 응답에 TID/GID/OID를 포함하지 않습니다.");
     }
 
     private void validateOwner(CurrentUser currentUser, DmAccount account) {
-        // TODO [특강 4 / 4-3] 원장 조회 계좌의 소유권을 확인하고 민감정보를 마스킹하세요.
-        throw new UnsupportedOperationException("TODO [특강 4 / 4-3] 원장 조회 계좌의 소유권을 확인하고 민감정보를 마스킹하세요.");
+        // TODO [특강 4 / 4-3] 원장 조회 계좌의 소유권을 확인하고 계좌번호를 마스킹한 7개 필드를 응답하세요. 고객 원장 응답에 TID/GID/OID를 포함하지 않습니다.
+        throw new UnsupportedOperationException("TODO [특강 4 / 4-3] 원장 조회 계좌의 소유권을 확인하고 계좌번호를 마스킹한 7개 필드를 응답하세요. 고객 원장 응답에 TID/GID/OID를 포함하지 않습니다.");
     }
 
     private MaskedLedgerItem mask(LiAccountingLedger ledger) {
-        // TODO [특강 4 / 4-3] 원장 조회 계좌의 소유권을 확인하고 민감정보를 마스킹하세요.
-        throw new UnsupportedOperationException("TODO [특강 4 / 4-3] 원장 조회 계좌의 소유권을 확인하고 민감정보를 마스킹하세요.");
+        // TODO [특강 4 / 4-3] 원장 조회 계좌의 소유권을 확인하고 계좌번호를 마스킹한 7개 필드를 응답하세요. 고객 원장 응답에 TID/GID/OID를 포함하지 않습니다.
+        throw new UnsupportedOperationException("TODO [특강 4 / 4-3] 원장 조회 계좌의 소유권을 확인하고 계좌번호를 마스킹한 7개 필드를 응답하세요. 고객 원장 응답에 TID/GID/OID를 포함하지 않습니다.");
     }
 }

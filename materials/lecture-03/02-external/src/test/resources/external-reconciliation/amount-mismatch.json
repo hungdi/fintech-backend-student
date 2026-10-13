@@ -1,0 +1,29 @@
+{
+  "baseDate": "2026-09-15",
+  "externalInstitutionCode": "OTHER-BANK",
+  "externalItems": [
+    {
+      "targetTid": "T-TRANSFER",
+      "targetGid": "G-TRANSFER",
+      "amount": "500000.00"
+    }
+  ],
+  "expected": {
+    "internalTotalAmount": "300000.00",
+    "externalTotalAmount": "500000.00",
+    "detailCount": 1,
+    "mismatchCount": 1,
+    "details": [
+      {
+        "targetTid": "T-TRANSFER",
+        "targetGid": "G-TRANSFER",
+        "internalAmount": "300000.00",
+        "externalAmount": "500000.00",
+        "differenceAmount": "200000.00",
+        "matched": false,
+        "reason": "우리 시스템 금액과 외부기관 금액이 다릅니다."
+      }
+    ],
+    "differenceAmount": "200000.00"
+  }
+}

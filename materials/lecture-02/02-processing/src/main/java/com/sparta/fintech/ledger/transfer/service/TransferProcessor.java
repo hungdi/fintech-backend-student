@@ -69,11 +69,15 @@ public class TransferProcessor {
 
     public TransferResult process(TransferCommand command) {
         // TODO [특강 2 / 6-5] 앞 절에서 작성한 검증, 잔액 Lock, 원장 저장과 완료 처리를 연결하세요.
+        // 완료 오더의 거래·전표 연결을 저장하세요. 원장 저장은 공통 ledgerPostingService.post(commandDto)를 사용합니다.
+        // 3강에서는 잔액 잠금 뒤 확정한 postedAt을 post(commandDto, postedAt)과 오더 완료에 함께 전달하세요.
         throw new UnsupportedOperationException("TODO [특강 2 / 6-5] 앞 절에서 작성한 검증, 잔액 Lock, 원장 저장과 완료 처리를 연결하세요.");
     }
 
     public TransferResult process(TransferCommand command, TransferPolicy policy) {
         // TODO [특강 2 / 6-5] 앞 절에서 작성한 검증, 잔액 Lock, 원장 저장과 완료 처리를 연결하세요.
+        // 완료 오더의 거래·전표 연결을 저장하세요. 원장 저장은 공통 ledgerPostingService.post(commandDto)를 사용합니다.
+        // 3강에서는 잔액 잠금 뒤 확정한 postedAt을 post(commandDto, postedAt)과 오더 완료에 함께 전달하세요.
         throw new UnsupportedOperationException("TODO [특강 2 / 6-5] 앞 절에서 작성한 검증, 잔액 Lock, 원장 저장과 완료 처리를 연결하세요.");
     }
 

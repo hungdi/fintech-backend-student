@@ -13,7 +13,7 @@ import jakarta.persistence.UniqueConstraint;
 import java.math.BigDecimal;
 import java.time.Instant;
 
-/** TODO [특강 1 / 3-1] 거래 식별자와 상태, 완료 시각을 저장하고 거래 출처를 구분하세요. 필드와 생성자, getter는 호출 계약으로 제공합니다. */
+/** TODO [특강 1 / 3-1] 거래 식별자와 유형, 금액, 상태 및 완료 시각을 저장하세요. 필드와 생성자, getter는 호출 계약으로 제공합니다. */
 public class DmTransaction extends BaseTimeEntity {
 
     private Long transactionId;
@@ -25,8 +25,6 @@ public class DmTransaction extends BaseTimeEntity {
     private String oid;
 
     private TransactionType transactionType;
-
-    private TransactionOrigin transactionOrigin = TransactionOrigin.LEDGER_EXERCISE;
 
     private TransactionStatus transactionStatus;
 
@@ -76,19 +74,13 @@ public class DmTransaction extends BaseTimeEntity {
         this.description = description;
     }
 
-    public void markTransferApi() {
-        // TODO [특강 2 / 6-3] API가 만든 거래의 출처를 원장 직접 실습과 구분하세요.
-        throw new UnsupportedOperationException("TODO [특강 2 / 6-3] API가 만든 거래의 출처를 원장 직접 실습과 구분하세요.");
-    }
-
-    public TransactionOrigin getTransactionOrigin() { return transactionOrigin; }
 
     public void complete() {
         complete(Instant.now());
     }
 
     public void complete(Instant now) {
-        // TODO [특강 1 / 3-1] 거래 완료 상태와 전달받은 Instant를 함께 기록하세요.
+        // TODO [특강 1 / 3-1] null 완료 시각을 상태나 필드 변경 전에 거절하고 완료 상태와 Instant를 함께 기록하세요.
         throw new UnsupportedOperationException("TODO [특강 1 / 3-1] 거래 완료 상태와 전달받은 Instant를 함께 기록하세요.");
     }
 

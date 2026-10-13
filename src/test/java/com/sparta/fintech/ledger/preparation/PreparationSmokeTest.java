@@ -21,13 +21,13 @@ class PreparationSmokeTest {
     @Test
     void openingDepositDtoHasTraceIdsAndLedgerBalanceSnapshot() {
         var posting = new LedgerPostingCommand.AccountPosting(1L, DebitCreditType.CREDIT,
-            new BigDecimal("100"), "입금", new BigDecimal("200"));
+            new BigDecimal("100000"), "입금", new BigDecimal("200000"));
         var command = new LedgerPostingCommand("T-OPENING", "G-OPENING", null,
-            TransactionType.DEPOSIT, new BigDecimal("100"), "KRW", "초기 입금",
+            TransactionType.DEPOSIT, new BigDecimal("100000"), "KRW", "초기 입금",
             List.of(posting), List.of());
         assertThat(command.journalTid()).isEqualTo("T-OPENING-JOURNAL");
         assertThat(command.accountingLedgerTid()).isEqualTo("T-OPENING-LEDGER");
         assertThat(command.accountPostings()).containsExactly(posting);
-        assertThat(posting.balanceAfter()).isEqualByComparingTo("200");
+        assertThat(posting.balanceAfter()).isEqualByComparingTo("200000");
     }
 }
