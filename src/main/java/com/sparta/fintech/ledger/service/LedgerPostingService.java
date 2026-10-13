@@ -29,7 +29,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
-/** TODO [특강 1 / 6-1] 거래와 계좌거래, 전표 및 회계원장을 함께 저장하고 완료 상태와 결과를 연결하세요. */
+/** TODO [특강 1 / 5-1, 5-2] 거래와 계좌거래, 전표 및 회계원장을 함께 저장하고 완료 상태와 결과를 연결하세요. */
 public class LedgerPostingService {
 
     private static final DateTimeFormatter VOUCHER_DATE_FORMAT = DateTimeFormatter.ofPattern("yyyyMMdd");
@@ -64,8 +64,8 @@ public class LedgerPostingService {
     }
 
     public LedgerPostingResult post(LedgerPostingCommand command) {
-        // TODO [특강 1 / 6-1] 거래와 계좌거래, 전표 및 회계원장을 함께 저장하고 완료 상태와 결과를 연결하세요.
-        throw new UnsupportedOperationException("TODO [특강 1 / 6-1] 거래와 계좌거래, 전표 및 회계원장을 함께 저장하고 완료 상태와 결과를 연결하세요.");
+        // TODO [특강 1 / 5-1, 5-2] 거래와 계좌거래, 전표 및 회계원장을 함께 저장하고 완료 상태와 결과를 연결하세요.
+        throw new UnsupportedOperationException("TODO [특강 1 / 5-1, 5-2] 거래와 계좌거래, 전표 및 회계원장을 함께 저장하고 완료 상태와 결과를 연결하세요.");
     }
 
     private void validate(LedgerPostingCommand command) {
@@ -89,13 +89,13 @@ public class LedgerPostingService {
     }
 
     private DmAccount getAccount(Long accountId) {
-        // TODO [특강 1 / 6-1] 고객 계좌 ID로 계좌를 조회하고 없는 참조는 저장 전에 거절하세요.
-        throw new UnsupportedOperationException("TODO [특강 1 / 6-1] 고객 계좌 ID로 계좌를 조회하고 없는 참조는 저장 전에 거절하세요.");
+        // TODO [특강 1 / 5-1, 5-2] 고객 계좌 ID로 계좌를 조회하고 없는 참조는 저장 전에 거절하세요.
+        throw new UnsupportedOperationException("TODO [특강 1 / 5-1, 5-2] 고객 계좌 ID로 계좌를 조회하고 없는 참조는 저장 전에 거절하세요.");
     }
 
     private void requireText(String value, String name) {
-        // TODO [특강 1 / 6-1] 필수 추적 ID와 통화의 null 및 빈 문자열을 거절하세요.
-        throw new UnsupportedOperationException("TODO [특강 1 / 6-1] 필수 추적 ID와 통화의 null 및 빈 문자열을 거절하세요.");
+        // TODO [특강 1 / 5-1, 5-2] 필수 추적 ID와 통화의 null 및 빈 문자열을 거절하세요.
+        throw new UnsupportedOperationException("TODO [특강 1 / 5-1, 5-2] 필수 추적 ID와 통화의 null 및 빈 문자열을 거절하세요.");
     }
 
     private String generateVoucherNo(LocalDate businessDate) {

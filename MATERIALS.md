@@ -7,7 +7,7 @@
 | 1강 1-2. 고객 ID로 계좌 연결하기 | 루트 `domain`, `repository`, `materials/lecture-01/*.csv` | 필드 타입, 생성자와 getter, Repository 계약, 샘플 값 | 엔티티 관계, PK, FK, UNIQUE와 필수 제약 | Java 17 |
 | 1강 2-1. 잔액 생성 과제 전 | `domain/StoredMoney.java` | 금액 검사 메서드 계약 | 표현 범위와 0 이상 검증. 양수 검증은 4-2에서 추가 | Java 17 |
 | 1강 4-2. 전표를 상세 내역과 연결하기 | `service/LedgerPostingCommand.java`, `domain/LedgerPostingRules.java` | DTO와 메서드 계약 | 거래 금액의 양수 조건과 거래 유형별 분개 검증 | 앞 절의 관계 설계와 `StoredMoney` |
-| 1강 6-1. 원장 저장 순서와 트랜잭션 | `service/LedgerPostingService.java` | 주입과 반환 타입, 전표번호 생성 | 검증, 저장 순서, 거래 출처와 트랜잭션 | 원장 엔티티와 금액 검증 |
+| 1강 5-1~5-2. 거래 흐름과 원장 저장 검증 | `service/LedgerPostingService.java` | 주입과 반환 타입, 전표번호 생성 | 검증, 저장 순서와 트랜잭션 | 원장 엔티티와 금액 검증 |
 | 2강 1-2~1-3. HTTP 입력과 Service 요청 DTO | `lecture-02/dependencies.gradle`, `lecture-02/01-request` | 입력 필드와 검증기 연결 선언 | HTTP 금액 제약과 정확한 표현 범위 | 1강 `StoredMoney` |
 | 2강 2-1. 계좌를 조회하고 상태와 통화 검증하기 | `lecture-02/02-processing` | 추적 ID와 Clock 연결, Command와 Result, 실패 주입 계약, 샘플 데이터 생성 코드와 동시 요청 실행 코드 | 검증, 잔액, Lock, 요청 해시, 멱등성, 원장 연결 | 1강 원장 저장 |
 | 2강 6-6. Controller에서 송금 Service 호출하기 | `lecture-02/03-http` | HTTP 경로와 응답 DTO | Service 연결과 오류 응답 | 처리 Service와 결과 타입 |
@@ -16,15 +16,15 @@
 | 3강 3-1~3-2. 샘플 준비와 일별 잔액 비교 | 기존 `01-internal`의 테스트 지원 및 비교 Service | 고정 시각과 금융·마감 자료 | 날짜 범위 조회, 일별 잔액 비교와 실행 저장 | 2-5 마감 구현 완료 |
 | 3강 4장 시작. 외부 대사 자료 준비하기 | `lecture-03/02-external` | JSON 13개와 파일 읽기 코드, 비교용 오더 샘플, 정산 표본 선언 | 외부 대사 매핑, 범위 조회, 누락과 금액·방향 비교, 입력 오류 처리 | 기관 코드와 Repository 추가 |
 | 3강 외부 대사 뒤. 순정산 계산 | `lecture-03/03-settlement` | 지급·수취 방향을 가진 A/B/C/D 표본, 반환 DTO, 테스트 틀 | 정산 표본 매핑·검증, 지급액·수취액·순액 집계, 대사 연결·재계산·확정 | 외부 대사 구현 완료 |
-| 3강 5장. 대사 예약 실행 | `lecture-03/04-scheduling` | 두 스케줄러의 주입과 호출 테스트 예제, 비활성 설정 | 마감과 대사 cron, UTC 전날 계산, Service 호출 | 일별 마감과 내부 대사 Service |
+| 3강 6장. 대사 예약 실행 | `lecture-03/04-scheduling` | 두 스케줄러의 주입과 호출 테스트 예제, 비활성 설정 | 마감과 대사 cron, UTC 전날 계산, Service 호출 | 일별 마감과 내부 대사 Service |
 | 4강 0장. 실습 준비 | `lecture-04/dependencies.gradle`, `lecture-04/01-security` | 설정 바인딩, DTO, 주입 및 테스트 환경 | 로그인, JWT 검증, 역할과 소유권, 마스킹, 감사 기록 | 3강까지 구현, 보안 의존성 추가 |
-| 4강 8-4. 초기 입금부터 송금과 대사까지 확인하기 | `lecture-04/02-integration` | 초기 입금 함수와 테스트 틀 | 기초 잔액 등록, 입금, 로그인, 송금, 마감과 대사의 통합 검증 | 앞 강의의 잔액 변경과 시각 인자 원장 Service와 일별 마감 |
+| 4강 기본 구현 후 추가 통합 실습 | `lecture-04/02-integration` | 초기 입금 함수와 테스트 틀 | 기초 잔액 등록, 입금, 로그인, 송금, 마감과 대사의 통합 검증 | 앞 강의의 잔액 변경과 시각 인자 원장 Service와 일별 마감 |
 
 표의 `domain`과 `service`는 `src/main/java/com/sparta/fintech/ledger/` 아래 경로입니다. `lecture-02` 등의 경로는 `materials/` 아래를 뜻합니다. 각 새 파일의 전체 상대 경로는 문서 끝의 파일 목록에서 확인합니다.
 
-표의 시점에 자료를 추가한 뒤 각 절에서 필요한 메서드를 구현합니다. 내부 대사 샘플은 2-5의 선행 구현을 마친 뒤 3-1-3에서 준비하고 3-2부터 실제 비교합니다. 외부 대사 샘플과 JSON은 4-6, 순정산 표본은 외부 대사 뒤의 정산 실습, 보안 샘플은 4강 7-1에서 사용합니다.
+표의 시점에 자료를 추가한 뒤 각 절에서 필요한 메서드를 구현합니다. 내부 대사 샘플은 2-5의 선행 구현을 마친 뒤 3-1에서 준비하고 3-2부터 실제 비교합니다. 외부 대사 샘플과 JSON은 4-6, 순정산 표본은 5장의 정산 실습, 보안 샘플은 4강 7-1에서 사용합니다.
 
-생성자 주입, 단순 필드 보관과 DTO 변환은 제공합니다. `@Transactional`, 비관적 `@Lock`, 역할용 `@PreAuthorize`와 업무 검증은 해당 절에서 직접 적용합니다. `TransferPolicy.NONE`은 2강에서 추가 보안 정책을 아직 연결하지 않은 호출 계약입니다. 4강의 고객 요청에는 보안 정책을 연결해야 합니다.
+생성자 주입, 단순 필드 보관과 DTO 타입은 제공합니다. 업무 메서드 안의 DTO 구성과 결과 변환은 해당 TODO에 따라 작성합니다. `@Transactional`, 비관적 `@Lock`, 역할용 `@PreAuthorize`와 업무 검증은 해당 절에서 직접 적용합니다. `TransferPolicy.NONE`은 2강에서 추가 보안 정책을 아직 연결하지 않은 호출 계약입니다. 4강의 고객 요청에는 보안 정책을 연결해야 합니다.
 
 ## 자료 추가 방법과 현재 단계의 실행 범위
 
@@ -41,9 +41,9 @@
 | 3강 3-1~3-2 | 기존 자료를 계속 사용 | 고정 시각과 샘플 입력 | 2-5 완료 후 샘플 적재, 기간 조회와 잔액 비교 |
 | 3강 4장 시작 | 아래 오더 수정 후 `lecture-03/02-external/src` | `ExternalReconciliationMaterialsSmokeTest`의 JSON 읽기 | 기관과 UTC 날짜 조회, 외부 대사 엔티티와 미리 제공한 정산 엔티티 매핑 |
 | 3강 외부 대사 뒤 | `lecture-03/03-settlement/src` | `SettlementMaterialsSmokeTest`의 A/B/C/D 표본·DTO 확인 | 앞 단계의 매핑 완료, 표본 생성자 검증·집계·대사 연결 |
-| 3강 5장 | `lecture-03/04-scheduling/src` | `SchedulerExerciseTest`의 고정 Clock 호출 검사 | 두 예약의 활성화와 cron 설정, 마감 저장과 일별 내부 대사 |
+| 3강 6장 | `lecture-03/04-scheduling/src` | `SchedulerExerciseTest`의 고정 Clock 호출 검사 | 두 예약의 활성화와 cron 설정, 마감 저장과 일별 내부 대사 |
 | 4강 0장 | 보안 의존성 추가 후 `lecture-04/01-security/src` | `SecurityPreparationSmokeTest`는 선언 연결만 확인, 마스킹 단위테스트 | 보안 Bean과 Properties 값 검증, 사용자 매핑과 아래 변경 |
-| 4강 8-4 | `lecture-04/02-integration/src` | DTO 준비 검사는 유지 | 초기 입금과 로그인, 송금 및 대사 구현 |
+| 4강 추가 통합 실습 | `lecture-04/02-integration/src` | DTO 준비 검사는 유지 | 초기 입금과 로그인, 송금 및 대사 구현 |
 
 컴파일은 문법과 타입의 연결을 확인하는 단계입니다. Spring 컨텍스트를 사용하지 않는 `smokeTest`는 미완성 JPA 매핑을 검사하지 않습니다. `test`는 과제도 모두 실행하므로 추가한 과제가 남아 있으면 실패합니다. 필요한 시점에 테스트 틀의 `fail(...)`을 실제 준비, 호출 및 assertion으로 교체하고 앞서 통과한 테스트를 함께 유지하세요.
 
@@ -51,7 +51,7 @@
 
 ### 1-2. 고객 ID로 계좌 연결하기 / 2-1. 지금 출금할 수 있는 금액은 얼마일까?
 
-`domain`의 필드와 생성자는 뒤 강의에서도 사용하는 호출 계약입니다. 이 필드를 엔티티로 매핑하면서 고객, 계좌, 잔액과 한도의 관계를 직접 설계하세요. 계좌번호와 고객번호의 중복, 같은 계좌의 두 잔액 행, 없는 부모 참조를 DB 테스트로 확인합니다. `BaseTimeEntity`와 UTC 감사 시각 연결은 제공됩니다. `DmAccountBalance.version`의 동시 변경 처리는 5-3에서 적용합니다.
+`domain`의 필드와 생성자는 뒤 강의에서도 사용하는 호출 계약입니다. 이 필드를 엔티티로 매핑하면서 고객, 계좌, 잔액과 한도의 관계를 직접 설계하세요. 계좌번호와 고객번호의 중복, 같은 계좌의 두 잔액 행, 없는 부모 참조를 DB 테스트로 확인합니다. `BaseTimeEntity`와 UTC 감사 시각 연결은 제공됩니다. `DmAccountBalance.version`에는 `@Version`을 매핑하며, 비관적 Lock과의 역할 비교는 특강 #2의 4-4에서 다룹니다.
 
 `materials/lecture-01/accounts.csv`는 첫 시나리오의 고객 역할과 시작 금액입니다. JPA가 생성한 ID는 `save()`의 반환 객체에서 읽습니다. 계정코드는 `ledger-codes.csv`를 사용합니다. CSV는 자동 적재되지 않습니다.
 
@@ -61,7 +61,7 @@
 
 잔액의 금액 검증은 특강 #1 2-1에서 위 세 메서드로 작성합니다. 양수 거래 금액 검사인 `positive()`는 1강 4-2에서 추가합니다. 검증을 생략하거나 입력값을 그대로 반환해서 잔액 생성 과제를 통과시키지 않습니다.
 
-### 4-2. 전표를 상세 내역과 연결하기 / 6-1. 원장 저장 순서와 트랜잭션
+### 4-2. 전표를 상세 내역과 연결하기 / 5-1~5-2. 거래 흐름과 원장 저장 검증
 
 `LedgerPostingCommand`는 전체 필드를 받는 11인자 생성자와 추적 ID 일부를 생략하는 9인자 생성자를 제공합니다. 9인자 형태에서 전표 TID는 `tid + "-JOURNAL"`, 회계원장 TID는 `tid + "-LEDGER"`입니다. 같은 TID를 재사용하면 같은 추적 ID가 만들어집니다. 초기 입금 함수 `FinancialTestData.openingDeposit()`은 고정 TID를 사용하므로 테스트 DB를 초기화한 뒤 한 번 호출합니다.
 
@@ -71,7 +71,7 @@
 
 2-1에서 작성한 `StoredMoney`의 범위 검사를 유지하고, 4-2에서는 거래 금액이 양수인지 확인하는 `positive()`를 추가합니다. 2강에서는 HTTP와 Service 입구에서 같은 검사 메서드를 재사용합니다.
 
-`LedgerPostingRules`에는 수수료 없는 송금, 현금 입금, 현금 출금의 두 줄 분개 규칙을 작성하세요. 차대 합계 외에 각 분개와 계좌거래의 요청 금액 및 고객 계좌를 확인합니다. `LedgerPostingService.post()`의 저장 로직과 트랜잭션을 작성한 뒤, 2강 6-3에서 `postTransfer()`와 `DmTransaction.markTransferApi()`를 연결합니다. 원장을 직접 적재하는 실습과 API 송금의 출처는 각각 `LEDGER_EXERCISE`와 `TRANSFER_API`입니다.
+`LedgerPostingRules`에는 수수료 없는 송금, 현금 입금, 현금 출금의 두 줄 분개 규칙을 작성하세요. 차대 합계 외에 각 분개와 계좌거래의 요청 금액 및 고객 계좌를 확인합니다. 5-1에서 `LedgerPostingService.post(command)`의 저장 로직과 트랜잭션을 작성하고, 5-2에서 저장한 관계와 실패 시 롤백을 확인합니다. 2강 6-3~6-5에서는 송금 오더와 변경된 잔액으로 원장 DTO를 구성해 같은 `post(command)`를 호출합니다.
 
 ## 2강: 기존 파일에 추가할 부분
 
@@ -108,7 +108,7 @@ default Optional<DmAccountBalance> findByAccountIdForUpdate(Long accountId) {
 
 `handleExistingOrder(TransferCommand command, String requestHash, DmTransferOrder order)`의 세 인자 선언을 유지합니다. 6-5의 기존 오더 처리 경로에서도 `handleExistingOrder(command, requestHash, existing)`으로 호출하세요. 5-4의 메서드 선언과 6-5의 호출에서 세 인자의 순서와 타입을 동일하게 맞춥니다.
 
-6-3의 DTO 생성은 `TransferProcessor.toLedgerPostingCommand()`, 거래 출처 구분은 `LedgerPostingService.postTransfer()`와 `DmTransaction.markTransferApi()`를 수정합니다. 6-3-1에서는 원장 DTO를 구성하고, 6-3-2에서는 원장 실습과 API 송금의 출처를 구분합니다.
+6-3-1에서는 `TransferProcessor.toLedgerPostingCommand()`로 원장 DTO를 구성합니다. 6-5의 송금 처리에서는 이 DTO를 `LedgerPostingService.post(commandDto)`에 전달하고, 반환된 거래 ID와 전표 ID 및 전표번호를 송금 오더의 완료 정보에 연결합니다.
 
 6-4-1의 오류 응답은 독립 파일 `transfer.web.ErrorResponse`를 사용합니다. `TransferExceptionHandler` 안에 같은 record를 중복 선언하지 않습니다. HTTP 파일은 6-6에 추가하고, 4강 6-1에서 공통 패키지로 옮깁니다.
 
@@ -126,9 +126,9 @@ var sample = createTransferAccounts("1000000.00", "100000.00", "1000000.00");
 
 인자 없는 `createTransferAccounts()`도 유지합니다. 기본값은 출금 1,000,000원, 입금 100,000원, 1회 한도 1,000,000원입니다. 이 경우 300,000원 송금 후 700,000원과 400,000원입니다. 두 형태 모두 초기 원장을 만들지 않으므로 3강 정상 대사 샘플로 쓰지 않습니다.
 
-### 7-1-3과 7-5. 요청별 결과와 예외를 모아 동시성 확인하기
+### 7-5. 요청별 결과와 예외를 모아 동시성 확인하기
 
-7-1-3과 7-5에서는 제공된 `ConcurrentRequests.run(int, IntFunction)`으로 요청을 동시에 실행합니다. 요청 인덱스는 0부터 시작하며 `Attempt`의 `index()`, `result()`, `error()`, `succeeded()`로 각 시도의 결과를 읽습니다. 반환 순서는 인덱스 순서입니다. `ConcurrentRequests`, `TransferCommand`와 `BigDecimal`을 import하고, 준비한 `sample`과 주입한 `transferService`로 다음 호출을 구성합니다.
+7-5에서는 제공된 `ConcurrentRequests.run(int, IntFunction)`으로 요청을 동시에 실행합니다. 요청 인덱스는 0부터 시작하며 `Attempt`의 `index()`, `result()`, `error()`, `succeeded()`로 각 시도의 결과를 읽습니다. 반환 순서는 인덱스 순서입니다. `ConcurrentRequests`, `TransferCommand`와 `BigDecimal`을 import하고, 준비한 `sample`과 주입한 `transferService`로 다음 호출을 구성합니다.
 
 ```java
 var attempts = ConcurrentRequests.run(5, index -> transferService.transfer(
@@ -148,7 +148,7 @@ var attempts = ConcurrentRequests.run(5, index -> transferService.transfer(
 
 ### 2-2. 내부 대사 자료와 기존 파일의 선언 준비하기
 
-2-2에서 `01-internal/src`를 추가하고 실행 엔티티와 결과 엔티티를 차례로 구현합니다. 마감 엔티티와 Repository 및 Service는 아래 2-5에서 완성하고 실제 내부 샘플은 3-1-3에서 호출합니다. `DailyClosingStatus`, `SmAccountDailyClosing`, `SmAccountDailyClosingRepository`, `DailyClosingService`도 이 자료에 포함합니다. 일별 마감의 필드, 생성자와 getter 및 호출 계약은 제공하며, JPA 매핑과 계좌·날짜 유일 제약, 금액 불변 제약, 실제 마감 보관과 검증 상태 처리 및 서비스 본문은 학생이 작성합니다.
+2-2에서 `01-internal/src`를 추가하고 실행 엔티티와 결과 엔티티를 차례로 구현합니다. 마감 엔티티와 Repository 및 Service는 아래 2-5에서 완성하고 실제 내부 샘플은 3-1에서 호출합니다. `DailyClosingStatus`, `SmAccountDailyClosing`, `SmAccountDailyClosingRepository`, `DailyClosingService`도 이 자료에 포함합니다. 일별 마감의 필드, 생성자와 getter 및 호출 계약은 제공하며, JPA 매핑과 계좌·날짜 유일 제약, 금액 불변 제약, 실제 마감 보관과 검증 상태 처리 및 서비스 본문은 학생이 작성합니다.
 
 자료를 추가하는 시점과 각 메서드를 구현하는 시점을 구분하세요. 2-2에서는 뒤 절에서 사용할 선언을 준비하고, 2-5에서 마감 기능을 완성한 뒤 3-1의 샘플 준비와 3-2의 일별 비교로 이어갑니다. `baseDate`는 결과 라벨과 실제 날짜 조회 조건에 함께 사용합니다.
 
@@ -160,11 +160,10 @@ var attempts = ConcurrentRequests.run(5, index -> transferService.transfer(
 | `domain/DiAccountTransaction.java`, `domain/DmTransaction.java`, `domain/LmJournalEntry.java` | 아래 기간 조회 인덱스를 기존 `@Table`에 추가 |
 | `domain/DmTransferOrder.java` | 완료 상태와 완료 시각 인덱스를 기존 매핑에 추가 |
 | `repository/DmAccountBalanceRepository.java` | 개설일 경계로 대상 계좌 ID를 정렬 조회하는 `findAccountIdsOpenedBefore(Instant endAt)` |
-| `repository/DiAccountTransactionRepository.java` | 기초 잔액 등록 전 거래 존재 검사, 계좌·방향별 완료 거래 기간 합계, 기간 내 미완료 원장 거래 조회 |
-| `repository/DmTransactionRepository.java` | 완료 시각 범위의 거래 조회, 요청 시각 범위의 미완료 거래 조회 |
-| `repository/LmJournalEntryRepository.java` | 완료 거래에 연결된 대상일 전표 조회, 전표 게시 시각 범위의 미완료 거래 조회 |
-| `repository/DmTransferOrderRepository.java` | 완료 시각 범위의 송금 오더 조회. 외부 기관 조건은 4장 시작에 추가 |
-| `service/LedgerPostingService.java` | 잔액 Repository 주입, 명시 시각을 받는 `post()`와 `postTransfer()` 확장, 현재 업무 날짜와 원장 처리일 검증 |
+| `repository/DiAccountTransactionRepository.java` | 기초 잔액 등록 전 거래 존재 검사, 계좌 ID 및 거래 ID로 내역 조회, 계좌·방향별 완료 거래 기간 합계 |
+| `repository/DmTransactionRepository.java` | 완료 상태이며 완료 시각이 대상 기간에 속하는 거래 조회 |
+| `repository/DmTransferOrderRepository.java` | 기존 `findByTid()` 재사용. 기관·통화·완료 기간을 제한하는 외부 대사 조회는 4장 시작에 추가 |
+| `service/LedgerPostingService.java` | 잔액 Repository 주입, 명시 시각을 받는 `post(command, postedAt)` 추가, 현재 업무 날짜와 원장 처리일 검증 |
 | `transfer/service/TransferProcessor.java` | `DailyClosingService` 주입과 잠금 후 시각 확정, 잔액 변경 전 마감 준비, 원장 및 오더에 같은 시각 전달 |
 
 `activeBusinessDate`는 해당 계좌 잔액에 반영 중인 UTC 날짜입니다. 처음에는 null일 수 있습니다. `initializeBusinessDate()`는 null이 아닌 날짜만 받아 최초 값 또는 같은 날짜를 허용하고 다른 날짜로 초기화하려 하면 거절하세요. `advanceBusinessDate()`는 이미 초기화된 계좌에서 날짜를 뒤로 돌리지 못하게 작성합니다. 기존 `ledgerBalance`, `availableBalance`의 저장 범위 검사와 지급보류액 보존을 유지합니다. MySQL의 `validate` 설정은 스키마를 수정하지 않으므로 `active_business_date` 컬럼과 일별 마감 테이블의 DDL도 직접 적용합니다. 기존 거래가 있는 실습 DB에는 확인한 이전 마감 기준이 필요합니다. 현재 잔액을 과거 기초로 자동 등록해 오류를 숨기지 않습니다.
@@ -210,11 +209,9 @@ int capture(LocalDate closedDate);
 
 ```java
 public LedgerPostingResult post(LedgerPostingCommand command, Instant postedAt);
-public LedgerPostingResult postTransfer(LedgerPostingCommand command, Instant postedAt);
-private LedgerPostingResult post(LedgerPostingCommand command, boolean apiTransfer, Instant postedAt);
 ```
 
-기존 private 두 인자 구현은 세 인자 구현으로 확장하고, 단일 Command 공개 메서드는 `clock.instant()`를 전달해 같은 검증과 저장 순서를 재사용합니다. 새 시각 인자 공개 메서드에도 기존 원장 저장의 `@Transactional` 경계를 유지하여 잔액 잠금과 원장 저장이 하나의 호출 트랜잭션에서 처리되도록 합니다. `postedAt`이 null 또는 현재 시각보다 미래이면 거절합니다. 계좌거래의 계좌 ID를 중복 없이 정렬해 기존 잔액 Lock을 얻고, 이미 업무 날짜가 설정된 계좌는 그 날짜와 원장 처리일이 같아야 합니다. 거래 생성·계좌거래·전표 게시·거래 완료에 같은 시각을 전달하세요. `DmTransaction`의 시각 인자 생성자와 `complete(Instant)`, `DiAccountTransaction`의 시각을 받는 10인자 생성자, `LmJournalEntry.post(Instant)`는 이미 루트에 있으므로 중복 선언하지 않습니다. 요청 금액의 표현 범위와 유형별 분개 금액 및 고객 계좌 검증을 유지합니다.
+기존 `post(command)`의 검증과 저장 로직을 시각 인자 메서드로 옮기고, 단일 Command 메서드는 `post(command, clock.instant())`에 위임합니다. 두 공개 메서드에 기존 원장 저장의 `@Transactional` 경계를 유지하여 잔액 잠금과 원장 저장이 하나의 호출 트랜잭션에서 처리되도록 합니다. `postedAt`이 null 또는 현재 시각보다 미래이면 거절합니다. 계좌거래의 계좌 ID를 중복 없이 정렬해 기존 잔액 Lock을 얻고, 이미 업무 날짜가 설정된 계좌는 그 날짜와 원장 처리일이 같아야 합니다. 거래 생성·계좌거래·전표 게시·거래 완료에 같은 시각을 전달하세요. `DmTransaction`의 시각 인자 생성자와 `complete(Instant)`, `DiAccountTransaction`의 시각을 받는 10인자 생성자, `LmJournalEntry.post(Instant)`는 이미 루트에 있으므로 중복 선언하지 않습니다. 요청 금액의 표현 범위와 유형별 분개 금액 및 고객 계좌 검증을 유지합니다.
 
 기존 `TransferProcessor`에는 `DailyClosingService` import와 `private final DailyClosingService dailyClosingService`를 추가합니다. 생성자에서는 `LedgerPostingService ledgerPostingService` 다음, `FinancialIdGenerator idGenerator` 앞에 새 인자를 넣고 필드에 할당합니다. 생성자를 직접 호출하는 테스트도 같은 순서로 수정하세요.
 
@@ -224,13 +221,13 @@ private LedgerPostingResult post(LedgerPostingCommand command, boolean apiTransf
 2. Lock을 모두 얻은 뒤 `Instant postedAt = clock.instant()`를 한 번만 확보하고 UTC 업무 날짜를 계산합니다.
 3. 두 잔액에 `dailyClosingService.prepareForPosting(balance, postedAt)`를 호출합니다.
 4. 같은 업무 날짜로 한도와 정책을 검증하고 기존 오더 저장·출금·입금·실패 Hook을 수행합니다.
-5. `ledgerPostingService.postTransfer(commandDto, postedAt)`를 호출하고 같은 `postedAt`으로 오더를 완료합니다.
+5. `ledgerPostingService.post(commandDto, postedAt)`를 호출하고 같은 `postedAt`으로 오더를 완료합니다.
 
 마감 보관과 잔액 변경 및 원장 저장은 같은 송금 트랜잭션에서 롤백되어야 합니다. `DailyClosingService`를 주입하지 않은 2강 초기 자료를 미리 수정하지 말고, 3강 자료를 추가한 시점에 이 연결을 적용합니다.
 
 ### 3-1-1. Repository 및 결과 DTO 계약 추가하기
 
-기존 Repository에 다음 계약을 추가합니다. 2-5-2에서 작성한 마감용 두 조회는 그대로 유지합니다. `List`, `Optional`, `Instant`, `BigDecimal`, 해당 도메인 타입을 import하세요. 단순 파생 조회는 선언으로 추가하고, 기간 조건이 있는 메서드는 미완성 `default` 본문에서 `UnsupportedOperationException`을 발생시키다가 구현 시 본문을 없애고 JPQL과 `@Param`을 작성합니다. `findByAccountIdForUpdate()`의 기존 단건 비관적 Lock은 유지합니다.
+기존 Repository에 다음 계약을 추가합니다. 2-5-2에서 작성한 마감용 두 조회는 그대로 유지합니다. `List`, `Instant`, `BigDecimal`, 해당 도메인 타입을 import하세요. 단순 파생 조회는 선언으로 추가하고, 기간 조건이 있는 메서드는 미완성 `default` 본문에서 `UnsupportedOperationException`을 발생시키다가 구현 시 본문을 없애고 JPQL과 `@Param`을 작성합니다. `findByAccountIdForUpdate()`의 기존 단건 비관적 Lock은 유지합니다.
 
 ```java
 // DiAccountTransactionRepository
@@ -238,37 +235,13 @@ List<DiAccountTransaction> findByAccountAccountId(Long accountId);
 List<DiAccountTransaction> findByTransactionTransactionId(Long transactionId);
 BigDecimal sumCompletedAmountInPeriod(Long accountId, DebitCreditType direction,
     Instant startAt, Instant endAt);
-List<DmTransaction> findIncompleteTransactionsInPeriod(Instant startAt, Instant endAt);
-List<DmTransaction> findCompletedTransactionsWithoutCompletionTimeInPeriod(
-    Instant startAt, Instant endAt);
-
 // DmTransactionRepository
 List<DmTransaction> findCompletedInPeriod(Instant startAt, Instant endAt);
-List<DmTransaction> findIncompleteRequestedInPeriod(Instant startAt, Instant endAt);
-List<DmTransaction> findCompletedWithoutCompletionTimeRequestedInPeriod(
-    Instant startAt, Instant endAt);
-
-// LmJournalEntryRepository
-Optional<LmJournalEntry> findByTransactionTransactionId(Long transactionId);
-List<LmJournalEntry> findCompletedInPeriod(Instant startAt, Instant endAt);
-List<DmTransaction> findIncompleteTransactionsInPeriod(Instant startAt, Instant endAt);
-List<DmTransaction> findCompletedTransactionsWithoutCompletionTimeInPeriod(
-    Instant startAt, Instant endAt);
-
-// LiJournalEntryLineRepository
-List<LiJournalEntryLine> findByJournalEntryJournalEntryId(Long journalEntryId);
-
-// LiAccountingLedgerRepository
-boolean existsByTransactionTransactionId(Long transactionId);
-List<LiAccountingLedger> findByJournalEntryJournalEntryId(Long journalEntryId);
-
-// DmTransferOrderRepository
-Optional<DmTransferOrder> findByTid(String tid);
-List<DmTransferOrder> findByTransferOrderStatus(TransferOrderStatus transferOrderStatus);
-List<DmTransferOrder> findCompletedInPeriod(Instant startAt, Instant endAt);
 ```
 
-기간 경계는 `startAt` 이상, `endAt` 미만입니다. 계좌거래 합계는 거래 상태 `COMPLETED`와 `occurredAt`을 기준으로 계좌 및 차대 방향을 제한합니다. 미완료 계좌거래 조회는 같은 `occurredAt` 범위의 미완료 거래를 중복 없이 반환합니다. 거래와 송금 오더의 완료 조회는 `completedAt`, 미완료 요청 조회는 `requestedAt`을 사용합니다. 완료 전표 조회는 연결 거래의 완료 상태와 `completedAt`, 미완료 전표 조회는 전표의 `postedAt`을 사용합니다. 범위와 상태의 조건을 생략해 `findAll()`로 대체하지 않습니다.
+기간 경계는 `startAt` 이상, `endAt` 미만입니다. 계좌거래 합계는 거래 상태 `COMPLETED`와 `occurredAt`을 기준으로 계좌 및 차대 방향을 제한합니다. 거래 조회는 완료 상태와 `completedAt`의 기간을 사용합니다. 선택한 거래의 계좌원장과 회계원장은 거래 ID로 조회하므로, 잘못 저장된 날짜도 상세 검사에서 확인할 수 있습니다. 범위와 상태의 조건을 생략해 `findAll()`로 대체하지 않습니다.
+
+`LiAccountingLedgerRepository.findByTransactionTransactionId()`와 `DmTransferOrderRepository.findByTid()`는 이미 제공된 선언을 재사용합니다. `SsReconciliationRunRepository`, `SiReconciliationResultRepository`와 `ReconciliationRunResult`도 `01-internal`에서 제공하므로 같은 타입이나 조회 메서드를 다시 선언하지 않습니다.
 
 기간 조회를 지원하는 인덱스도 기존 엔티티의 `@Table(indexes = ...)`과 MySQL DDL에 추가하세요. 인덱스 이름은 직접 정하되 아래 컬럼 순서를 유지합니다. 표는 기본 스네이크 케이스 컬럼 기준이므로 학생이 명시한 `@Column`과 `@JoinColumn` 이름이 다르면 실제 DB 이름에 맞춥니다. 기존 인덱스와 관계 제약을 삭제하지 않습니다.
 
@@ -292,7 +265,7 @@ default List<DmTransaction> findCompletedInPeriod(Instant startAt, Instant endAt
 }
 ```
 
-### 3-1-3. 날짜와 마감 기록을 포함한 테스트 샘플 준비하기
+### 3-1. 날짜와 마감 기록을 포함한 테스트 샘플 준비하기
 
 정답 프로젝트의 3·4강에도 같은 내부 샘플 및 고정 Clock 준비 계약을 제공합니다. 수강생 자료에서는 기존 오더 비교를 `ExternalReconciliationTestSupport`, 정산 표본을 `SettlementTestSupport`로 구분합니다. `createSampleData(false)`는 대상일 마감을 저장하지 않은 상태를 준비하며, 기본 `createSampleData()`는 마감을 포함합니다.
 
@@ -304,34 +277,31 @@ default List<DmTransaction> findCompletedInPeriod(Instant startAt, Instant endAt
 
 `CAPTURED`는 실제 잔액을 저장했지만 아직 대사하지 않은 상태이며, `VERIFIED`는 대상일 전체 내부 대사의 불일치가 0건인 상태입니다. 대상일과 전날의 마감 자료가 없거나 전날 상태가 검증 완료가 아니면 대사 실행을 거절합니다. 불일치가 발견되면 해당 날짜와 이후 날짜의 검증 완료 상태를 무효화합니다. 마감 금액과 기존 대사 결과는 보존하고 재실행마다 새 실행 ID를 남깁니다.
 
-3-2에서는 잔액 비교만 연결해 두 계좌 결과를 검사할 수 있습니다. 거래·전표·원장 규칙을 추가하면서 같은 `run()`을 확장하되, 일부 규칙만 작성한 상태를 전체 검증 완료로 표시하지 않습니다. 완성된 `run()`은 모든 내부 검사 후 불일치 0건일 때만 해당일 마감을 `VERIFIED`로 표시하세요. 테스트 개수나 고정 결과 건수 대신 날짜 범위, 계좌별 기대·실제 금액, 상태와 오류 사유를 확인합니다.
+3-2에서는 잔액 비교만 연결해 두 계좌 결과를 검사할 수 있습니다. 3-3의 거래별 계좌거래 검사와 3-4의 계좌원장 및 회계원장 검사를 추가하면서 같은 `run()`을 확장하되, 일부 규칙만 작성한 상태를 전체 검증 완료로 표시하지 않습니다. 3-5에서 세 검사를 모두 연결하고 불일치 0건일 때만 해당일 마감을 `VERIFIED`로 표시하세요. 정상 샘플은 유형별 2건씩 총 6건입니다. 날짜 범위, 계좌별 기대·실제 금액, 상태와 오류 사유도 함께 확인합니다.
 
 고정 마감 샘플의 현재 잔액을 나중에 바꾸어도 이미 저장한 과거 마감 금액은 바뀌지 않습니다. 잔액 불일치 사례는 마감 저장 전에 실제 잔액을 훼손한 별도 자료로 만들고, 거래·전표·회계원장 훼손 사례는 저장된 마감 금액을 보존한 상태에서 비교합니다. 이미 저장한 마감 금액을 999,000원으로 훼손하는 사례는 테스트 DB에만 `JdbcTemplate` 직접 SQL을 적용하는 오류 주입입니다. 이를 위해 엔티티 setter나 정상 Service의 마감 UPDATE 기능을 추가하거나 불변 매핑을 약화하지 않습니다. `ReconciliationIntegrationExerciseTest`의 일별 마감 과제에서는 날짜 전환, 거래 없는 날, 기초 잔액 누락과 재실행을 직접 구현해 확인하세요. 실패 송금 롤백도 앞 강의 실패 Hook 테스트에 마감 기록과 업무 날짜 검증을 추가합니다. `InternalReconciliationTestSupport.practiceClock`의 타입인 `MutableBusinessClock`은 고정 시각을 바꾸는 테스트 준비 코드입니다. `practiceClock.set(instant)`로 시각을 변경하고 각 테스트 전에는 기본 실행 시각으로 복구합니다. 서비스의 실제 날짜 계산은 공통 UTC Clock을 사용하고 테스트 코드의 시각 전환으로 다음 날 마감과 대사를 확인합니다.
 
-### 3-5. 전표 상세와 회계원장 연결을 비교하기
+### 3-3~3-4. 거래별 계좌거래와 회계원장 비교하기
 
-`ReconciliationService.hasMatchingJournalAmount()`의 3-4 검증에는 전표 `POSTED` 상태를 포함합니다. 금액이나 날짜가 맞아도 `DRAFT` 또는 `CANCELLED`이면 정상으로 판정하지 않습니다.
+`ReconciliationService.hasCompleteAccountItems()`는 거래 유형에 맞는 계좌거래의 건수, 방향, 개별 금액, 통화와 발생일을 검사합니다. 송금은 서로 다른 계좌의 출금과 입금이 각각 한 건이어야 하며, 송금 오더가 존재하고 오더의 두 계좌와 일치해야 합니다. 오더의 상태나 완료 시각을 별도 대사하는 규칙은 구현하지 않습니다.
 
-`ReconciliationService.hasMatchingLedgerLines()`는 3-5에서 처음 구현합니다. 요청 금액, 전표 상세와 원장 행의 연결, 실제 고객 계좌를 확인해야 이 절의 정상 비교를 실행할 수 있습니다. 6-3은 이 메서드를 처음 작성하는 시점이 아니라 저장 후 금액이나 고객 계좌가 바뀐 추가 오류 사례를 검사하는 절입니다.
+`hasMatchingAccountingLedgers()`는 완료 거래 ID로 조회한 계좌원장과 회계원장을 `LedgerPostingRules.matches()`에 전달합니다. 거래 연결, 완료 UTC 날짜, 통화, 각 금액과 방향, 고객 계좌 및 계정과목을 검사하세요. `expectedAccountingLedgerAmount()`에서는 송금의 입출금 합계를 사용하고, 현금 입출금은 현금 대응 분개까지 포함해 계좌거래 합계의 두 배를 기대합니다. 회계원장의 합계는 제공된 `sumAccountingLedgers()`를 재사용합니다.
 
-### 3-6. 회계원장의 차변과 대변 비교하기 / 6-3. 기본 규칙이 놓치는 오류도 테스트하기
+### 3-4. 합계가 같아도 개별 내역이 다른 오류 확인하기
 
 `materials/lecture-03/01-internal/corruption-cases.json`은 DB를 변경할 대상과 기대 상태를 구분한 테스트 자료입니다. 자동으로 DB를 수정하지 않습니다. 각 사례는 정상 샘플을 새로 적재한 상태에서 시작하고, `T-TRANSFER`의 행만 수정합니다.
 
-| 변경 대상 | 거래와 전표 | 전표와 회계원장 | 회계원장 차대 합계 |
+| 변경 대상 | 계좌 잔액과 계좌거래 | 거래와 계좌거래 | 계좌원장과 회계원장 |
 | --- | --- | --- | --- |
-| 원장 양쪽 금액만 400,000원 | NORMAL | MISMATCH | NORMAL |
-| 전표 상세와 원장 양쪽 금액을 모두 400,000원 | MISMATCH | MISMATCH | NORMAL |
+| 회계원장 양쪽 금액만 400,000원 | NORMAL | NORMAL | MISMATCH |
+| 전표 상세와 회계원장 양쪽 금액을 모두 400,000원 | NORMAL | NORMAL | MISMATCH |
+| 전표 상세 금액만 400,000원 | NORMAL | NORMAL | NORMAL |
 
 고객예수금 원장의 고객 계좌만 다른 정상 계좌로 바꾼 사례도 추가하세요. 단순히 금액이 같다는 이유로 정상 처리해서는 안 됩니다. 비교 결과를 저장하면서 원본 금융 기록을 수정하지 않습니다.
 
-### 3-7-1. 완료 시각과 API 송금 오더의 상태·참조 검사
+### 완료 처리 복습: null 시각을 변경 전에 검사하기
 
-정상 완료 거래는 기존 `completedAt`의 UTC 기간 조회를 유지합니다. 그런데 상태가 `COMPLETED`인데 완료 시각이 null인 잘못된 기록은 그 조회에서 빠집니다. 3-7-1에서는 위 세 개의 완료 시각 누락 조회에 상태 `COMPLETED`와 `completedAt IS NULL`을 함께 적용하고, 요청 `requestedAt`, 연결 계좌거래 `occurredAt`, 연결 전표 `postedAt`이 대상일에 속한 후보를 합칩니다. 같은 실행에서 거래 ID로 중복을 제거하고 `COMPLETED_TRANSACTION_MISSING_COMPLETION_TIME`의 불일치를 기록하세요. 다른 시각으로 완료 시각을 채우거나 거래를 자동 정상 처리하지 않습니다. 근거가 여러 날짜에 걸치면 각 해당 날짜의 대사에서 오류 후보가 됩니다. 테스트는 날짜별로 새로운 DB 상태와 해당 전일·당일 마감 자료를 준비하여 앞 날짜의 불일치가 다음 날짜 선행 조건을 바꾸지 않도록 나눕니다.
-
-`hasMatchingCompletedTransferOrder(DmTransferOrder order, DmTransaction transaction)`는 기존 식별값·금액·통화·전표 연결 검증에 두 상태의 완료 여부와 두 완료 시각의 null 및 정확한 `Instant.equals()` 비교를 추가하는 과제입니다. 거래→오더와 완료 오더→거래 양방향 검사에서 같은 계약을 사용합니다. 순방향에서 검사한 오더 ID는 역방향 결과를 중복 추가하지 않도록 관리합니다. 같은 UTC 날짜에 있다는 조건만으로 두 완료 시각이 같다고 판단하지 않습니다.
-
-정상 저장 경로의 `DmTransaction.complete(Instant)`와 `DmTransferOrder.complete(..., Instant)`도 null 시각을 상태·완료 시각·거래 및 전표 링크·전표번호 변경 전에 거절해야 합니다. 이 입력 검증과 직접 SQL로 훼손한 과거 데이터를 발견하는 대사는 별도 과제로 확인합니다. 금액·원장 관계가 맞더라도 전표 상태가 `POSTED`가 아니면 3-4의 전표 비교는 불일치여야 합니다.
+`DmTransaction.complete(Instant)`와 `DmTransferOrder.complete(..., Instant)`는 null 시각을 상태·완료 시각·거래 및 전표 링크·전표번호 변경 전에 거절해야 합니다. 제공된 `ReconciliationExerciseTest.nullCompletionTimeIsRejectedBeforeTransactionStateChanges()`에서 처음 완료할 때와 이미 완료한 뒤 다시 호출할 때 기존 값이 유지되는지 확인하세요. 이 과제는 정상 완료 처리의 입력 검증입니다. 내부 대사의 거래 조회는 완료 상태이며 `completedAt`이 대상 UTC 날짜에 속하는 거래를 사용합니다.
 
 ### 4장 시작. 외부 대사 자료 준비하기 / 4-5. Service에서 자료를 비교하고 결과 저장하기
 
@@ -376,13 +346,13 @@ default List<DmTransferOrder> findExternalReconciliationTargets(java.time.Instan
 
 `ExternalReconciliationTestSupport`는 같은 초기 입금과 송금에 외부 비교용 오더를 함께 준비합니다. 기관은 `OTHER-BANK`, 통화는 `KRW`, 완료 시각은 기준일 UTC 12:00입니다. 여기의 기관은 외부 보고 비교 범위를 표시합니다. 동일 은행 내 송금의 완료를 외부기관 지급 완료로 바꾸지 않으며, 기관 코드만으로 지급·수취 방향을 판단하지 않습니다. 내부 대사는 대상일의 거래·원장과 저장한 마감 잔액을 비교하고, 외부 대사는 기관과 통화 및 UTC 하루 범위를 한정합니다.
 
-`ExternalReconciliationService.indexExternalItems()`는 4-5의 `reconcile()` 연결 전에 구현합니다. TID나 금액이 없거나 TID가 중복되면 결과를 저장하기 전에 `IllegalArgumentException`을 발생시키세요. 금액이 음수이거나 저장 범위를 넘는 경우도 같은 예외로 처리합니다. 4-6-3은 이 검증의 오류 사례를 검사하는 절입니다. JSON 읽기 코드에 이 업무 검증을 옮기지 않습니다.
+`ExternalReconciliationService.indexExternalItems()`는 4-5의 `reconcile()` 연결 전에 구현합니다. TID나 금액이 없거나 TID가 중복되면 결과를 저장하기 전에 `IllegalArgumentException`을 발생시키세요. 금액이 음수이거나 저장 범위를 넘는 경우도 같은 예외로 처리합니다. 4-6에서 이 검증의 오류 사례를 검사합니다. JSON 읽기 코드에 이 업무 검증을 옮기지 않습니다.
 
 4-6의 `ExternalReconciliationExerciseTest`는 외부 대사용 `ExternalReconciliationTestSupport`를 상속합니다. 이 클래스의 `createSampleData()`는 `OTHER-BANK` 기관의 완료된 `T-TRANSFER` 오더까지 준비합니다. 앞의 내부 대사 테스트는 기존 `InternalReconciliationTestSupport`를 계속 사용합니다. 한 테스트에서 두 샘플을 함께 적재하지 않습니다.
 
-### 4-2. 외부 대사 차액에 음수를 허용하는 금액 검증 추가하기
+### 4-3-1. 외부 대사 차액에 음수를 허용하는 금액 검증 추가하기
 
-외부 금액이 내부보다 작으면 `differenceAmount`가 음수입니다. `SmExternalReconciliation`과 상세 생성자를 구현하기 전에 기존 `StoredMoney`에 아래 계약을 추가하고 본문을 작성하세요. `exact()`의 null·반올림 없는 표현 범위 검증을 재사용하고 부호 제한을 추가하지 않습니다. 기존 `positive()`와 `nonNegative()`의 거래·잔액 검증은 유지합니다. 뒤의 정산-6에서도 같은 계약으로 순수취 금액을 검증합니다.
+외부 금액이 내부보다 작으면 `differenceAmount`가 음수입니다. `SmExternalReconciliation`과 상세 생성자를 구현하기 전에 기존 `StoredMoney`에 아래 계약을 추가하고 본문을 작성하세요. `exact()`의 null·반올림 없는 표현 범위 검증을 재사용하고 부호 제한을 추가하지 않습니다. 기존 `positive()`와 `nonNegative()`의 거래·잔액 검증은 유지합니다. 뒤의 5-2에서도 같은 계약으로 순수취 금액을 검증합니다.
 
 ```java
 public static BigDecimal signed(BigDecimal amount, String name) {
@@ -405,7 +375,7 @@ public static BigDecimal signed(BigDecimal amount, String name) {
 
 이전 외부 자료를 이미 적용했다면 직접 작성한 비교 로직을 `ExternalReconciliationService.reconcile()`로 옮기고 외부 헤더·상세의 저장 대상을 새 엔티티로 바꿉니다. 옛 `SiSettlementDetail`과 그 Repository 및 `ExternalSettlementItem`은 새 이름으로 전환해 중복 Repository가 남지 않게 정리합니다. `SmSettlement`와 `SettlementService`는 이번 정산 계약으로 변경합니다. 기존 비교 검증은 `ExternalReconciliationExerciseTest`로 옮기고 fixtures의 합계 차액을 `differenceAmount`로 검사합니다. 이미 작성한 송금·내부 대사 코드는 덮어쓰지 않습니다.
 
-### 4-6-1. 제공된 JSON 파일의 입력과 기대 결과 구분하기
+### 4-6. 제공된 JSON 파일의 입력과 기대 결과 구분하기
 
 파일은 `materials/lecture-03/02-external/src/test/resources/external-reconciliation/`에 있습니다. `ExternalReconciliationJson.read()`가 반환한 `input`의 세 값만 `ExternalReconciliationService.reconcile()`에 전달합니다. `expected`와 `expectedError`는 테스트에서만 사용하세요. 기존 비교 검증 조건은 모두 유지하며 기대 결과의 `settlementAmount`를 업무 의미가 맞는 `differenceAmount`로 변경했습니다. `ExternalReconciliationJson.read()`는 중복 TID나 잘못된 금액도 그대로 DTO로 변환하므로 Service의 입력 검증을 확인할 수 있습니다.
 
@@ -420,7 +390,7 @@ var result = externalReconciliationService.reconcile(
 // sample.expected()와 result 및 저장된 상세 결과를 직접 비교하세요.
 ```
 
-오류 자료는 `ExternalReconciliationJson.read("invalid/negative-amount.json")`처럼 읽습니다. `sample.expectedError()`는 예상 오류 문구이며 Service에 전달하지 않습니다. `externalSourceSnapshot()`은 `ExternalReconciliationExerciseTest`에 선언한 별도 과제 메서드이며 JSON 파서가 제공하지 않습니다. 4-6-2의 금융 원본 9개 테이블에 `sm_account_daily_closing`을 더해 모든 행과 모든 컬럼을 안정적인 순서로 조회하세요. 외부 대사 전후 반환값을 비교하며 외부 대사 결과 테이블은 원본 비교에서 제외하고 따로 검사합니다.
+오류 자료는 `ExternalReconciliationJson.read("invalid/negative-amount.json")`처럼 읽습니다. `sample.expectedError()`는 예상 오류 문구이며 Service에 전달하지 않습니다. `externalSourceSnapshot()`은 `ExternalReconciliationExerciseTest`에 선언한 별도 과제 메서드이며 JSON 파서가 제공하지 않습니다. 4-6의 원본 보존 검사에서는 금융 원본 9개 테이블에 `sm_account_daily_closing`을 더해 모든 행과 모든 컬럼을 안정적인 순서로 조회하세요. 외부 대사 전후 반환값을 비교하며 외부 대사 결과 테이블은 원본 비교에서 제외하고 따로 검사합니다.
 
 | 파일 | 입력의 의미 | 기대 결과 |
 | --- | --- | --- |
@@ -440,15 +410,15 @@ var result = externalReconciliationService.reconcile(
 
 외부 대사의 `differenceAmount = externalTotalAmount - internalTotalAmount`는 자료 차액입니다. 실제 정산은 `netSettlementAmount = payableAmount - receivableAmount`를 계산합니다. 양수는 우리 기관의 순지급, 음수는 순수취, 0은 상계 후 지급·수취 없음입니다. 모든 금액은 반올림 없는 `DECIMAL(19,2)`와 `BigDecimal`을 유지합니다.
 
-`02-external`에서 미리 제공한 `SettlementDirection`, `SiSettlementSampleObligation`, `SmSettlement`, `SettlementStatus`와 Repository는 외부 대사 서비스의 선언을 연결하기 위한 코드입니다. 외부 대사 DB 테스트를 실행하기 전에 `SiSettlementSampleObligation`과 `SmSettlement`의 JPA 매핑도 선언대로 먼저 완성합니다. Spring Data는 사용하지 않는 Repository도 생성하므로 이 두 매핑이 없으면 외부 대사 테스트의 컨텍스트가 시작되지 않습니다. 정산 표본의 생성자 검증은 정산-4, 지급·수취·상태 처리는 정산-5~정산-7, 정산 쓰기 잠금 조회는 정산-7에서 구현합니다. 선언을 먼저 제공하는 이유는 외부 대사와 정산 확인의 범위 잠금 계약이 연결되어 있기 때문입니다. 이어서 `03-settlement/src`를 추가하세요. 기존 외부 대사 파일을 다시 덮어쓰지 않습니다.
+`02-external`에서 미리 제공한 `SettlementDirection`, `SiSettlementSampleObligation`, `SmSettlement`, `SettlementStatus`와 Repository는 외부 대사 서비스의 선언을 연결하기 위한 코드입니다. 외부 대사 DB 테스트를 실행하기 전에 `SiSettlementSampleObligation`과 `SmSettlement`의 JPA 매핑도 선언대로 먼저 완성합니다. Spring Data는 사용하지 않는 Repository도 생성하므로 이 두 매핑이 없으면 외부 대사 테스트의 컨텍스트가 시작되지 않습니다. 정산 표본의 생성자 검증은 5-1, 지급·수취·상태 처리와 정산 쓰기 잠금 조회는 5-2에서 구현합니다. 선언을 먼저 제공하는 이유는 외부 대사와 정산 확인의 범위 잠금 계약이 연결되어 있기 때문입니다. 이어서 `03-settlement/src`를 추가하세요. 기존 외부 대사 파일을 다시 덮어쓰지 않습니다.
 
 | 순서 | 작성할 부분 | 제공하는 계약 |
 | --- | --- | --- |
-| 정산-1~정산-3 | 정산과 대사의 차이, 외부 대사 구현 | `SmExternalReconciliation`과 `SiExternalReconciliationDetail`은 대사 실행·상세 이력 |
-| 정산-4 | 앞서 매핑한 표본의 필수값·금액·방향 검증 | `SiSettlementSampleObligation(baseDate, institution, currency, tid, gid, direction, amount)` |
-| 정산-5~정산-6 | 지급액과 수취액 각각 합산 후 차감 | `SmSettlement`의 `payableAmount`, `receivableAmount`, `netSettlementAmount` |
-| 정산-7 | 대사 연결과 재계산·확정 제한 | `SettlementService.calculate(date, institution, currency, externalReconciliationId)`, `confirm(settlementId)` |
-| 정산-8 | A/B/C/D, 범위·최신성·재실행·롤백 검증 | `SettlementSamples`, `SettlementTestSupport`, `SettlementExerciseTest` |
+| 4장 | 외부 대사 구현 | `SmExternalReconciliation`과 `SiExternalReconciliationDetail`은 대사 실행·상세 이력 |
+| 5-1 | 앞서 매핑한 표본의 필수값·금액·방향 검증 | `SiSettlementSampleObligation(baseDate, institution, currency, tid, gid, direction, amount)` |
+| 5-2 | 지급액과 수취액 각각 합산 후 차감 | `SmSettlement`의 `payableAmount`, `receivableAmount`, `netSettlementAmount` |
+| 5-2 | 대사 연결과 재계산·확정 제한 | `SettlementService.calculate(date, institution, currency, externalReconciliationId)`, `confirm(settlementId)` |
+| 5-3 | A/B/C/D, 범위·최신성·재실행·롤백 검증 | `SettlementSamples`, `SettlementTestSupport`, `SettlementExerciseTest` |
 
 `SiSettlementSampleObligation`의 출처는 교육용 기관 간 지급·수취 약정입니다. `03-settlement/src/test/resources/settlement/case-a.json`부터 `case-d.json`까지의 자료를 `SettlementSamples`가 입력 DTO와 테스트 기대값으로 나누어 읽습니다. JSON 읽기는 업무 집계나 확정 검증을 수행하지 않습니다. `SettlementTestSupport.createSampleObligations()`는 이 표본만 저장하며 기존 송금 API·잔액·원장·송금 완료 상태를 생성하거나 바꾸지 않습니다. 표본의 금액은 양수, 방향은 `PAYABLE` 또는 `RECEIVABLE`이며 날짜·기관·통화·TID가 같은 표본은 중복 저장하지 않습니다. 다른 통화나 날짜는 별도 범위로 집계합니다.
 
@@ -456,7 +426,7 @@ var result = externalReconciliationService.reconcile(
 
 대사는 매 실행마다 새 헤더·상세를 저장합니다. 정산은 날짜·기관·통화 UNIQUE 범위에서 `CALCULATED` 초안을 같은 ID로 다시 계산하고 새 대사를 연결합니다. `CONFIRMED` 금액은 덮어쓸 수 없습니다. 최신 표본 대사와 현재 표본의 fingerprint가 일치해야 계산할 수 있으며, 최신 대사가 `MISMATCH`인 경우에도 참고용 `CALCULATED` 금액은 저장합니다. 담당자 확인인 `confirm()`은 연결된 최신 대사가 `NORMAL`이고 현재 표본이 계산 당시와 같을 때만 허용합니다. 정상 대사의 합계 차액이 0인지뿐 아니라 거래별 상태를 검사하세요. `CALCULATED`와 `CONFIRMED` 모두 실제 외부 지급 실행 상태가 아닙니다.
 
-대사 저장, 정산 계산, 담당자 확인은 별도의 Service 트랜잭션입니다. `confirm()` 거절이 이전에 저장한 불일치 대사 헤더·상세를 지워서는 안 됩니다. 정산 조회·재계산·확정의 쓰기 잠금은 `SmSettlementRepository.findScopeForUpdate()`와 `findByIdForUpdate()`에 직접 작성합니다. 정산-6의 순액 저장 검증에는 외부 대사 4-2에서 추가한 `StoredMoney.signed()`를 그대로 재사용합니다. 지급액·수취액과 표본 거래 금액의 0 이상/양수 검증도 유지합니다.
+대사 저장, 정산 계산, 담당자 확인은 별도의 Service 트랜잭션입니다. `confirm()` 거절이 이전에 저장한 불일치 대사 헤더·상세를 지워서는 안 됩니다. 정산 조회·재계산·확정의 쓰기 잠금은 `SmSettlementRepository.findScopeForUpdate()`와 `findByIdForUpdate()`에 직접 작성합니다. 5-2의 순액 저장 검증에는 외부 대사 4-3-1에서 추가한 `StoredMoney.signed()`를 그대로 재사용합니다. 지급액·수취액과 표본 거래 금액의 0 이상/양수 검증도 유지합니다.
 
 | 표본 | 지급액 | 수취액 | 순정산액 | 외부 대사와 확정 |
 | --- | ---: | ---: | ---: | --- |
@@ -467,7 +437,7 @@ var result = externalReconciliationService.reconcile(
 
 D의 내부 표본은 `T-TRANSFER` 300,000원 지급 1건입니다. 외부는 같은 TID 200,000원과 없는 `T-EXTERNAL-ONLY` 100,000원입니다. `SettlementSamples.caseD()`의 `expected`는 실제 Service에 전달하지 않습니다. 정상 외부 대사 결과·정산 FK, 과거 정상 결과로 최신 불일치 우회 금지, 재대사 후 표본 변경, 확정 후 재계산, 저장 실패 롤백도 과제 테스트에 포함됩니다. 테스트의 `exercise` 태그는 미완성 과제를 구분하는 표식이며 통과 처리나 비활성화를 뜻하지 않습니다.
 
-### 5-1. 마감 저장과 대사를 각각 예약하기
+### 6-1~6-3. 마감 저장과 대사를 각각 예약하기
 
 `04-scheduling/src`를 추가한 뒤 `ReconciliationSchedulingConfig`의 예약 활성화와 두 스케줄러의 `runDaily()`에 `@Scheduled`를 작성합니다. `DailyClosingScheduler`는 `DailyClosingService.capture()`를, `ReconciliationScheduler`는 `ReconciliationService.run()`을 호출합니다. 둘 다 주입된 `Clock`으로 **UTC 실행일의 전날**을 계산합니다.
 
@@ -490,7 +460,7 @@ D의 내부 표본은 `T-TRANSFER` 300,000원 지급 1건입니다. 외부는 �
 
 | 실행 범위 | 사용할 설정과 프로필 |
 | --- | --- |
-| 보안 DB 통합 테스트와 8-4 | `SecurityTestSupport`를 상속하면 `test`, `security-test`, MockMvc와 DB 초기화가 적용됩니다. |
+| 보안 DB 통합 테스트와 추가 통합 실습 | `SecurityTestSupport`를 상속하면 `test`, `security-test`, MockMvc와 DB 초기화가 적용됩니다. |
 | 기존 2강과 3강의 DB 통합 테스트 | `TransferIntegrationExerciseTest`, `ReconciliationIntegrationExerciseTest`, `ExternalReconciliationExerciseTest`, `SettlementExerciseTest`에 `@ActiveProfiles("security-test")`를 추가합니다. 상위 클래스의 `test`가 함께 상속됩니다. |
 | 별도로 작성한 Spring DB 테스트 | `@ActiveProfiles({"test", "security-test"})`를 적용합니다. |
 | 일반 로컬 앱 실행 | DB 환경변수와 `security.env.example`의 환경변수를 준비한 뒤 `security` 프로필을 활성화합니다. |
@@ -506,7 +476,7 @@ D의 내부 표본은 `T-TRANSFER` 300,000원 지급 1건입니다. 외부는 �
 
 `security.config.SecurityProperties`의 타입과 `@ConfigurationProperties(prefix = "app.security")`, `SecurityConfig`의 `@EnableConfigurationProperties` 등록은 준비되어 있습니다. `issuer`, `long accessTokenTtlMinutes`, `jwtSecret`, `cryptoPassword`, `cryptoSalt`는 YAML의 kebab-case 이름과 연결됩니다.
 
-Properties의 compact 생성자에서 기본 issuer `sparta-fintech`와 양수가 아닌 TTL의 기본값 30분을 적용하고, JWT 서명 키 `jwtSecret`이 32자 이상인지, 암호화 키 생성에 쓰는 `cryptoPassword`와 `cryptoSalt`가 비어 있지 않은지 검증하세요. 기본값은 매개변수에 먼저 적용한 뒤 검증합니다. 제공된 `validate()`의 본문만으로 생성자 매개변수를 바꿀 수는 없으므로 기본값 처리는 compact 생성자에 작성합니다. 초기에는 값 검증 TODO가 있어 Properties 생성과 Spring 기동이 실패합니다. smoke 검사는 선언의 연결만 확인합니다.
+Properties의 compact 생성자는 기본 issuer `sparta-fintech`와 양수가 아닌 TTL의 기본값 30분을 이미 적용합니다. 이 기본값 처리는 유지하고, `validate()`의 TODO에서 JWT 서명 키 `jwtSecret`이 UTF-8 기준 32바이트 이상인지, 암호화 키 생성에 쓰는 `cryptoPassword`와 `cryptoSalt`가 비어 있지 않은지 검증하세요. 초기에는 값 검증 TODO가 있어 Properties 생성과 Spring 기동이 실패합니다. smoke 검사는 선언의 연결만 확인합니다.
 
 `AccountJwtAuthenticationConverter`는 JWT를 Spring Security 인증 객체로 변환하는 Converter 클래스입니다. 검증된 JWT의 계정 식별값으로 현재 DB의 계정 상태와 역할을 확인하고 인증 객체에 연결하세요. JWT의 `roles` claim은 발급 시점의 역할 정보이며 API 인가는 Converter가 연결한 현재 DB 역할을 사용합니다.
 
@@ -548,7 +518,7 @@ org.springframework.data.domain.Page<SiReconciliationResult> findByReconciliatio
 
 `AuditLogService.safeText()`는 줄바꿈과 탭을 공백으로 바꾸고, 이메일과 숫자 패턴을 마스킹한 뒤 길이를 제한하는 메서드로 구현합니다. `save()`에서는 해당 문자열 필드에 `safeText()`로 처리한 값을 사용하세요. 모든 개인정보를 자동으로 찾아내는 기능으로 가정하지 않습니다.
 
-### 5-3-2. 송금 완료 기록을 같은 트랜잭션에서 저장하기 / 6-1. HTTP 상태 코드와 보안 실패 구분
+### 5-3. 송금 완료 기록을 같은 트랜잭션에서 저장하기 / 6-1. HTTP 상태 코드와 보안 실패 구분
 
 송금 완료 기록 엔티티 `AhTransferCompletion`에는 오더 ID, 금액과 완료 시각 등을 저장합니다. 이 기록은 잔액 변경과 같은 DB 트랜잭션에서 저장하세요.
 
@@ -556,7 +526,7 @@ org.springframework.data.domain.Page<SiReconciliationResult> findByReconciliatio
 
 `TransferExceptionHandler`의 기존 입력 오류 및 409 규칙을 새 `common.web.ApiExceptionHandler`에 옮겨 보안과 감사 처리를 확장합니다. 같은 예외를 두 전역 Advice가 처리하지 않도록 기존 `TransferExceptionHandler`의 `@RestControllerAdvice`를 제거한 뒤 필요 없는 옛 클래스를 정리하세요. `transfer.web.ErrorResponse`를 사용하던 곳은 `common.web.ErrorResponse`로 변경하고 기존 HTTP 계약은 유지합니다. 일반 `IllegalStateException`은 500이며 요청 키 충돌만 409로 처리합니다.
 
-### 7-1-2. 테스트 클래스와 초기화 준비 / 8-4. 초기 입금부터 송금과 대사까지 확인하기
+### 7-1-2. 테스트 클래스와 초기화 준비 / 추가 통합 실습: 초기 입금부터 송금과 대사까지 확인하기
 
 `SecurityIntegrationExerciseTest`와 `OpeningDepositExerciseTest`는 `SecurityTestSupport`를 상속합니다. 공통 주입, 초기화와 `createSecurityFixture()`는 이미 제공하므로 같은 이름의 메서드를 다시 작성하지 않습니다. `SecurityExerciseTest.masksAccountNumber()`는 DB 없이 실행하는 단위테스트로 유지합니다.
 
@@ -594,35 +564,37 @@ FinancialTestData.openingDeposit(accountId, amount, accountBalanceRepository,
 | 3강 2-4 | `ReconciliationExerciseTest.equalTotalsDoNotHideMissingStructure()` | DB 없는 결과 객체 검증 |
 | 3강 3-2-2 | `ReconciliationIntegrationExerciseTest.usesVerifiedOpeningAndCapturedClosingForDailyAmounts()` | 고정 전일 기준과 당일 마감 비교, 전체 대사 후 VERIFIED 확인 |
 | 3강 3-2-2 | `ReconciliationIntegrationExerciseTest.includesANonZeroVerifiedOpeningBalance()` | 기초 500,000원과 당일 입출금을 포함한 기대·실제 마감 1,200,000원 |
-| 3강 2-5-2, 5-3 | `ReconciliationIntegrationExerciseTest.closingBatchPreservesThePriorDayBeforeNextDayPosting()` | 다음 날 입금 전 마감 보관, 거래 없는 날짜와 재저장 불변 |
-| 3강 2-5-3, 3-8-1 | `ReconciliationIntegrationExerciseTest.failedNextDayTransferRollsBackCapturedClosingAndBusinessDate()` | 다음 날 실패 송금의 마감 기록·업무 날짜·잔액과 원장 전체 롤백 |
-| 3강 3-3~3-8, 6-3 | `ReconciliationIntegrationExerciseTest.limitsAllComparisonRulesToAHalfOpenUtcDay()` | 당일 00:00 포함, 다음 날 00:00과 전날 제외, 각 비교 규칙 범위 |
 | 3강 3-2-1 | `ReconciliationIntegrationExerciseTest.rejectsMissingOrUnverifiedClosingBeforeSavingResults()` | 전일 자료 없음·미검증 또는 당일 자료 없음 시 예외와 결과 미저장 |
-| 3강 3-3~3-8, 6-3 | `ReconciliationIntegrationExerciseTest.mismatchedClosingCannotServeAsTheNextDayOpening()` | 불일치 마감의 검증 거절, 이후 날짜 기준 무효화 |
-| 3강 3-6, 6-3 | `ReconciliationIntegrationExerciseTest.ledgerOnlyAndJournalAndLedgerCorruptionHaveDifferentResults()` | 정상 샘플에서 금액 및 고객 계좌를 변경한 원장 오류 구분 |
-| 1강 3-1 복습, 3강 3-7-1 | `ReconciliationExerciseTest.nullCompletionTimeIsRejectedBeforeTransactionStateChanges()` | 거래와 오더의 null 완료 시각 입력을 거절하고 상태·시각·링크 보존 |
-| 3강 4-6-2 | `ExternalReconciliationExerciseTest.suppliedFilesDetectDifferencesMissingRowsAndOffsettingTotals()` | `ExternalReconciliationTestSupport`의 기관 오더와 정상 형식 JSON 6개, 재실행 검증 |
-| 3강 4-6-3 | `ExternalReconciliationExerciseTest.invalidInputIsRejectedWithoutSavingResults()` | 입력 오류 JSON 7개와 결과 미저장 검증 |
-| 3강 4-6-2~4-6-3 | `ExternalReconciliationExerciseTest.externalReconciliationPreservesAllDailyClosingColumns()` | 외부 대사의 정상·거절·재실행에서 금융·마감 전체 원본 보존 |
+| 3강 3-3 | `ReconciliationIntegrationExerciseTest.detectsSplitCreditAccountTransactions()` | 합계 600,000원·차액 0원이어도 입금 2건이면 거래별 MISMATCH |
+| 3강 3-3 | `ReconciliationIntegrationExerciseTest.transferRequiresExactAccountItemsAndOrderAccounts()` | 송금 상세의 건수·방향·금액·계좌·날짜·통화와 오더 존재 검사 |
+| 3강 3-4 | `ReconciliationIntegrationExerciseTest.detectsMissingAccountingLedgers()` | 송금 회계원장 누락의 기대 600,000원·실제 0원·차액 -600,000원 |
+| 3강 3-4 | `ReconciliationIntegrationExerciseTest.accountTransactionsAndAccountingLedgersAreComparedDirectly()` | 전표 상세와 별개로 계좌원장과 회계원장의 금액·계좌·방향·날짜를 직접 비교 |
+| 3강 3-4 | `ReconciliationIntegrationExerciseTest.equalLedgerTotalsDoNotHideIncorrectIndividualRecords()` | 합계가 같아도 개별 분개 금액·방향·계정과목·계좌·날짜 오류 검출 |
+| 3강 3-5 | `ReconciliationIntegrationExerciseTest.normalReconciliationHasSixResultsAndNoMismatch()` | 세 유형별 2건, 총 6건 NORMAL과 마감 VERIFIED |
+| 3강 3-5 | `ReconciliationIntegrationExerciseTest.finalReconciliationHasOneBalanceMismatch()` | 총 6건 중 잔액 불일치 1건, 실행 COMPLETED와 마감 CAPTURED |
+| 1강 3-1 복습, 3강 완료 처리 복습 | `ReconciliationExerciseTest.nullCompletionTimeIsRejectedBeforeTransactionStateChanges()` | 거래와 오더의 null 완료 시각 입력을 거절하고 상태·시각·링크 보존 |
+| 3강 4-6 | `ExternalReconciliationExerciseTest.suppliedFilesDetectDifferencesMissingRowsAndOffsettingTotals()` | `ExternalReconciliationTestSupport`의 기관 오더와 정상 형식 JSON 6개, 재실행 검증 |
+| 3강 4-6 | `ExternalReconciliationExerciseTest.invalidInputIsRejectedWithoutSavingResults()` | 입력 오류 JSON 7개와 결과 미저장 검증 |
+| 3강 4-6 | `ExternalReconciliationExerciseTest.externalReconciliationPreservesAllDailyClosingColumns()` | 외부 대사의 정상·거절·재실행에서 금융·마감 전체 원본 보존 |
 | 3강 4-5~4-6 | `ExternalReconciliationExerciseTest.scopeValidationAndStorageFailurePreserveExistingResultsAndSourceRows()` | 범위·필수 입력과 대사 저장 실패 롤백 |
-| 3강 정산-8 | `SettlementExerciseTest.caseAProducesNetPayableAndLinksTheNormalExternalRun()` | A: 지급300,000/수취100,000/순지급200,000, 정상 대사 연결·확인 |
-| 3강 정산-8 | `SettlementExerciseTest.caseBProducesNegativeNetReceivable()` | B: 순수취200,000, net=-200,000 |
-| 3강 정산-8 | `SettlementExerciseTest.caseCProducesZeroNetSettlement()` | C: 지급·수취 동일, net=0 |
-| 3강 정산-8 | `SettlementExerciseTest.caseDStoresMismatchAndCalculationButCannotConfirm()` | D: 합계 차0·상세 불일치2, 참고 계산 보관·확정 거절 |
-| 3강 정산-8 | `SettlementExerciseTest.rejectsUnrelatedLegacyOrStaleReconciliationAtCalculationAndConfirmation()` | 다른 범위·오더 출처·과거 대사·변경 표본 거절 |
-| 3강 정산-8 | `SettlementExerciseTest.repeatedCalculationUpdatesOneDraftAndProtectsConfirmedResults()` | 같은 범위 초안 ID 갱신, 확정 후 덮어쓰기 금지 |
-| 3강 정산-8 | `SettlementExerciseTest.calculationAndConfirmationRollBackWhenSavingFails()` | 계산·초안 갱신·확정 저장 실패 롤백 |
-| 3강 정산-8 | `SettlementExerciseTest.scopesObligationsAndRejectsInvalidOrOverflowingAmounts()` | 범위 집계와 필수값·양수 금액·합계 범위 검증 |
-| 3강 5-3 | `SchedulerExerciseTest.passesPreviousUtcDateToReconciliation()` | 고정 Clock과 Mock으로 대사에 UTC 전날 전달 검증 |
-| 3강 5-3 | `SchedulerExerciseTest.passesPreviousUtcDateToClosing()` | Clock의 표시 시간대와 무관하게 마감에 UTC 전날 전달 검증 |
-| 3강 5-3 | `SchedulerExerciseTest.propagatesFailuresFromBothBatchServices()` | 두 서비스의 실패가 스케줄러 호출자에게 전달되는지 검증 |
-| 3강 5-3 | `SchedulerExerciseTest.schedulingIsDisabledByDefaultAndUsesSeparateUtcCrons()` | 기본 비활성, 별도 UTC 예약 등록과 Runnable 호출 과제 |
-| 3강 5-3 | `SchedulerExerciseTest.eitherBatchCanBeDisabledWithoutDisablingTheOther()` | 한 예약을 꺼도 다른 예약이 유지되는지 검증하는 과제 |
+| 3강 5-3 | `SettlementExerciseTest.caseAProducesNetPayableAndLinksTheNormalExternalRun()` | A: 지급300,000/수취100,000/순지급200,000, 정상 대사 연결·확인 |
+| 3강 5-3 | `SettlementExerciseTest.caseBProducesNegativeNetReceivable()` | B: 순수취200,000, net=-200,000 |
+| 3강 5-3 | `SettlementExerciseTest.caseCProducesZeroNetSettlement()` | C: 지급·수취 동일, net=0 |
+| 3강 5-3 | `SettlementExerciseTest.caseDStoresMismatchAndCalculationButCannotConfirm()` | D: 합계 차0·상세 불일치2, 참고 계산 보관·확정 거절 |
+| 3강 5-3 | `SettlementExerciseTest.rejectsUnrelatedLegacyOrStaleReconciliationAtCalculationAndConfirmation()` | 다른 범위·오더 출처·과거 대사·변경 표본 거절 |
+| 3강 5-3 | `SettlementExerciseTest.repeatedCalculationUpdatesOneDraftAndProtectsConfirmedResults()` | 같은 범위 초안 ID 갱신, 확정 후 덮어쓰기 금지 |
+| 3강 5-3 | `SettlementExerciseTest.calculationAndConfirmationRollBackWhenSavingFails()` | 계산·초안 갱신·확정 저장 실패 롤백 |
+| 3강 5-3 | `SettlementExerciseTest.scopesObligationsAndRejectsInvalidOrOverflowingAmounts()` | 범위 집계와 필수값·양수 금액·합계 범위 검증 |
+| 3강 6-3 | `SchedulerExerciseTest.passesPreviousUtcDateToReconciliation()` | 고정 Clock과 Mock으로 대사에 UTC 전날 전달 검증 |
+| 3강 6-3 | `SchedulerExerciseTest.passesPreviousUtcDateToClosing()` | Clock의 표시 시간대와 무관하게 마감에 UTC 전날 전달 검증 |
+| 3강 6-3 | `SchedulerExerciseTest.propagatesFailuresFromBothBatchServices()` | 두 서비스의 실패가 스케줄러 호출자에게 전달되는지 검증 |
+| 3강 6-3 | `SchedulerExerciseTest.schedulingIsDisabledByDefaultAndUsesSeparateUtcCrons()` | 기본 비활성, 별도 UTC 예약 등록과 Runnable 호출 과제 |
+| 3강 6-3 | `SchedulerExerciseTest.eitherBatchCanBeDisabledWithoutDisablingTheOther()` | 한 예약을 꺼도 다른 예약이 유지되는지 검증하는 과제 |
 | 4강 4-2부터 4-4 | `SecurityExerciseTest.masksAccountNumber()` | DB 없는 마스킹 검증 |
 | 4강 7-1~7-3 | `SecurityIntegrationExerciseTest.loginOwnershipRoleAndTokenFailures()` | `SecurityTestSupport`로 로그인, 소유권, 역할, 만료 및 변조 토큰 검증 |
 | 4강 8-2 | `SecurityIntegrationExerciseTest.idempotentReplayAndDurableCompletion()` | 재시도 소유권, 상태 검사 범위, 동시 요청·감사 로그·송금 완료 기록 검증 |
-| 4강 8-4 | `OpeningDepositExerciseTest.openingDepositWithHeldFundsRecordsLedgerBalance()` | 원장 금액 100,000원, 사용가능잔액 80,000원에서 입금 후 balanceAfter 검증 |
-| 4강 8-4 | `OpeningDepositExerciseTest.loginTransferReplayAndReconciliationUseCompleteOpeningLedger()` | 실제 기초 등록, 초기 원장과 로그인, 송금·재시도, 다음 UTC 날짜 마감과 VERIFIED 확인 |
+| 4강 추가 통합 실습 | `OpeningDepositExerciseTest.openingDepositWithHeldFundsRecordsLedgerBalance()` | 원장 금액 100,000원, 사용가능잔액 80,000원에서 입금 후 balanceAfter 검증 |
+| 4강 추가 통합 실습 | `OpeningDepositExerciseTest.loginTransferReplayAndReconciliationUseCompleteOpeningLedger()` | 실제 기초 등록, 초기 원장과 로그인, 송금·재시도, 다음 UTC 날짜 마감과 VERIFIED 확인 |
 
 2강의 송금 DB 과제는 `TransferIntegrationExerciseTest`, 4강의 보안 API 과제는 `SecurityIntegrationExerciseTest`에서 작성합니다. 추가한 강의의 과제만 먼저 선택하려면 루트에서 다음 명령을 사용합니다.
 
@@ -671,7 +643,6 @@ FinancialTestData.openingDeposit(accountId, amount, accountBalanceRepository,
 - `src/main/java/com/sparta/fintech/ledger/domain/LimitType.java`
 - `src/main/java/com/sparta/fintech/ledger/domain/LmJournalEntry.java`
 - `src/main/java/com/sparta/fintech/ledger/domain/StoredMoney.java`
-- `src/main/java/com/sparta/fintech/ledger/domain/TransactionOrigin.java`
 - `src/main/java/com/sparta/fintech/ledger/domain/TransactionStatus.java`
 - `src/main/java/com/sparta/fintech/ledger/domain/TransactionType.java`
 - `src/main/java/com/sparta/fintech/ledger/repository/CmCustomerRepository.java`
